@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+enum BookCategory {
+    MYSTERY = 0;
+    SCIENCE_FICTION = 1;
+    SELF_HELP = 2;
+}
+
+message RecommendationRequest {
+
+}
