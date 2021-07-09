@@ -23,8 +23,21 @@
     * User Account: manages user signup and account details, such as changing their password.
     * Reviews: stores book ratings and reviews entered by users.
 
+## Why RPC and Protocol Buffers?
+    * Documentation is good, but self-documented code is better.
+    * The gRPC framework is generally more efficient than using typical HTTP requests.
+    * gRPC is built on top of HTTP/2, which can make multiple requests in parallel on a long-lived connection in a thread-safe way.
+    * HTTP/2 has built-in header compression.
+    * All fileds in proto3 are optional. you'll need to validate that they're all set. If you leave one unset, then  it'll default to zero for numberic types or to an empty string for strings.
+
+
 ## Define two microservices
 | Microservices| Detail|
 |:-------------|:------|
 |[Marketplace](./marketplace/README.md)|display a list of books to the user|
 |[Recommendations](./recommendations/README.md)|provides a list of books in which the user may be interested|
+
+
+```markdown
+1. RPC stands for remote prpcedure call.
+```

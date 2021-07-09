@@ -28,7 +28,11 @@ begain again is a Mid-year work summary.
         - 分支的概念是Git工具的核心，只需遵循一条规则，Master/Main分支是一个任何时刻的可用稳定分支,由于其他分支都是从Master分支创建
     - ⚠️  注意事项:
         - 常见问题是线上的Hotfix分支需要及时合并到Master和Develop分支, 不然下次Develop合并Master分支的时候会将之前修复的问题覆盖，导致Bug修复重现
-    
+* [  ] Dapr:
+    - [Install the Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/)
+    - [Initialize Dapr in your local environment](https://docs.dapr.io/getting-started/install-dapr-selfhost/) **注意开发代理**
+    - [安装过程记录](./docs/tools/dapr/README.md)
+   
 
 ### More information
 * Git
