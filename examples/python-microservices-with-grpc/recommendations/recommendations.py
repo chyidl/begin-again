@@ -1,5 +1,10 @@
 from concurrent import futures
 import random
 import grpc
-import recommendations_pb2 as pb2
-from recommendations_pb2_grpc import
+from recommendations_pb2 import BookCategory, BookRecommendation, RecommendationResponse
+import recommendations_pb2_grpc
+
+
+books_by_category = {
+    BookCategory.MYSTERY: [BookRecommendation(id=1, title="The Maltese Falcon"), BookRecommendation(id=2, title="Mu")]
+}
