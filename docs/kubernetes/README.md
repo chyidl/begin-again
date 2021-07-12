@@ -10,6 +10,7 @@
 * Docker Engine
 > Docker Engine 是一个C/S架构的应用程序，docker 客户端和守护进程使用REST API 通过UNIX套接字或网络接口进行通信, 底层技术支持：Namespace(隔离),CGroups(资源限制),UnionFS(镜像和容器的分层)
     * dockerd常驻后台进程,用来监听Docker API 请求和管理Docker对象，比如镜像、容器、网络和Volume
+    * docker remote api: 
     * docker client,  命令行CLI接口(docker命令)，通过和REST API进行交互
     * docker registry: 用来存储Docker镜像的仓库
     * Images: 镜像是一个只读模版
@@ -221,6 +222,89 @@ IMAGE          CREATED         CREATED BY                                      S
 <missing>      2 weeks ago     /bin/sh -c #(nop)  LABEL maintainer=NGINX Do…   0B
 <missing>      2 weeks ago     /bin/sh -c #(nop)  CMD ["bash"]                 0B
 <missing>      2 weeks ago     /bin/sh -c #(nop) ADD file:4903a19c327468b0e…   69.3MB
+```
+
+* Dockerfile 定制镜像
+> Dockerfile 是一个文本文件，包含指令Instruction, 每一条指令构建一层
+```
+# 定制nginx镜像
+$ mkdir mynginx
+$ cd mynginx
+$ touch Dockerfile
+
+FROM nginx
+RUN echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
+
+# docker build 构建镜像是在服务端Docker引擎中构建, 构架的时候，用户制定构建镜像上下文路径，docker build 命令将路径下的所有内容打包，上传给Docker引擎
+❯ docker build -t nginx:v3 .
+Sending build context to Docker daemon  2.048kB
+Step 1/2 : FROM nginx
+ ---> 4cdc5dd7eaad
+ Step 2/2 : RUN echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
+  ---> Running in c4577827074a
+  Removing intermediate container c4577827074a
+   ---> 45eeb9662c35
+   Successfully built 45eeb9662c35
+   Successfully tagged nginx:v3
+
+
+# FROM 制定基础镜像; Docker 存在一个特殊的镜像 scratch [这个镜像是虚拟概念,表示空白镜像]
+# RUN 执行命令: 
+    shell 格式: RUN <命令> 
+    exec 格式: RUN ["可执行文件", "参数1"， "参数2"]
+Union FS 有最大层数限制，AUFS最大不得超过127层
+镜像是多层存储，每一层的东西并不会在下一层被删除，会一直跟随镜像，因此镜像构建确保每一层只添加真正需要添加的东西，任何无关的东西都应该清理掉
+# COPY 指令: 源文件路径是相对路径
+# ADD 指令:
+
+.dockerignore: 剔除不需要作为上下文传递给Docker引擎
+
+❯ docker image ls nginx
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+nginx        v3        45eeb9662c35   13 minutes ago   133MB
+nginx        v2        22ca850c170e   12 hours ago     133MB
+nginx        latest    4cdc5dd7eaad   5 days ago       133MB
+
+# docker save 将镜像保存为归档文件
+chyi in openmediavault in ~/download/mynginx
+❯ docker save 45eeb9662c35 | gzip > nginx-v3.tar.gz
+
+chyi in openmediavault in ~/download/mynginx took 16s
+❯ ll
+total 50M
+-rw-r--r-- 1 chyi users  81 Jul 12 09:08 Dockerfile
+-rw-r--r-- 1 chyi users 50M Jul 12 09:35 nginx-v3.tar.gz
+```
+
+* Move Docker images around
+```
+pv which monitor the flow of data through a pipe
+
+# Save an image
+$ docker save <image-name or image-id> -o <tarred-image-file-name>
+
+# Load an image
+$ docker load -i <tarred-image-file-name>
+
+# Piping the image
+$ docker save <image-name or image-id> | ssh user@host 'docker load'
+
+$ docker save <image-name> | pv -N "Compressing..." | gzip | pv -N "Transfering to docker-machine..." | docker-machine ssh <target-machine-name> 'docker load'
+```
+
+* 私有镜像仓库
+```
+# 登陆
+$ docker login  
+
+# 注销
+$ docker logout
+
+# 查找官方仓库镜像
+$ docker search
+
+# 下载本地
+$ docker pull
 ```
 
 ## Kubeadm 搭建Kubernetes集群
