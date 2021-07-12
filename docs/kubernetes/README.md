@@ -10,7 +10,7 @@
 * Docker Engine
 > Docker Engine 是一个C/S架构的应用程序，docker 客户端和守护进程使用REST API 通过UNIX套接字或网络接口进行通信, 底层技术支持：Namespace(隔离),CGroups(资源限制),UnionFS(镜像和容器的分层)
     * dockerd常驻后台进程,用来监听Docker API 请求和管理Docker对象，比如镜像、容器、网络和Volume
-    * docker remote api: 
+    * docker remote api:
     * docker client,  命令行CLI接口(docker命令)，通过和REST API进行交互
     * docker registry: 用来存储Docker镜像的仓库
     * Images: 镜像是一个只读模版
@@ -249,8 +249,8 @@ Step 1/2 : FROM nginx
 
 
 # FROM 制定基础镜像; Docker 存在一个特殊的镜像 scratch [这个镜像是虚拟概念,表示空白镜像]
-# RUN 执行命令: 
-    shell 格式: RUN <命令> 
+# RUN 执行命令:
+    shell 格式: RUN <命令>
     exec 格式: RUN ["可执行文件", "参数1"， "参数2"]
 Union FS 有最大层数限制，AUFS最大不得超过127层
 镜像是多层存储，每一层的东西并不会在下一层被删除，会一直跟随镜像，因此镜像构建确保每一层只添加真正需要添加的东西，任何无关的东西都应该清理掉
@@ -295,7 +295,7 @@ $ docker save <image-name> | pv -N "Compressing..." | gzip | pv -N "Transfering 
 * 私有镜像仓库
 ```
 # 登陆
-$ docker login  
+$ docker login
 
 # 注销
 $ docker logout
@@ -304,7 +304,172 @@ $ docker logout
 $ docker search
 
 # 下载本地
-$ docker pull
+$ docker pull centos
+
+# 构建本地私有仓库
+# 将上传的镜像放在本地/srv/dev-disk-by-uuid目录下
+❯ docker run -d \
+      -p 5000:5000 \
+      -v /srv/dev-disk-by-uuid-671cdfc1-9ed4-4b4b-9966-74197042607da/registry:/var/lib/registry \
+      --restart=always \
+      --name registry registry
+
+Unable to find image 'registry:latest' locally
+latest: Pulling from library/registry
+ddad3d7c1e96: Pull complete
+6eda6749503f: Pull complete
+363ab70c2143: Pull complete
+5b94580856e6: Pull complete
+12008541203a: Pull complete
+Digest: sha256:aba2bfe9f0cff1ac0618ec4a54bfefb2e685bbac67c8ebaf3b6405929b3e616f
+Status: Downloaded newer image for registry:latest
+367eb3880fa19300439343b9049f4bcecc5b278e1b093fda947690f82a018b57
+
+# 在私有仓库上传、搜索、下载镜像
+# docker tag IMAGE[:TAG] [REGISTRY_HOST[:REGISTRY_PORT]/]REPOSITORY[:TAG]
+❯ docker tag mysql:latest 127.0.0.1:5000/mysql:lastest
+
+# docker push 上传标记的镜像
+❯ docker push 127.0.0.1:5000/mysql:lastest
+The push refers to repository [127.0.0.1:5000/mysql]
+03a007e88ba3: Pushed
+d605c112cfab: Pushed
+74634a9cf30b: Pushed
+ea5fd90d1e58: Pushed
+cffd1f984514: Pushed
+3182d4b853f0: Pushed
+ae477702a513: Pushed
+570df12e998c: Pushed
+b2abc2ad4a41: Pushed
+e82f328cb5e6: Pushed
+14be0d40572c: Pushed
+02c055ef67f5: Pushed
+lastest: digest: sha256:68b207d01891915410db3b5bc1f69963e3dc8f23813fd01e61e6d7e7e3a46680 size: 2828
+
+# curl 查看仓库中的镜像
+❯ curl 172.30.1.14:5000/v2/_catalog
+{"repositories":["mysql"]}
+
+# 先删除已有镜像
+❯ docker image rm 127.0.0.1:5000/mysql:lastest
+Untagged: 127.0.0.1:5000/mysql:lastest
+Untagged: 127.0.0.1:5000/mysql@sha256:68b207d01891915410db3b5bc1f69963e3dc8f23813fd01e61e6d7e7e3a46680
+
+chyi in openmediavault in ~ via 🐍 v3.8.6
+❯ docker images
+REPOSITORY                                          TAG       IMAGE ID       CREATED         SIZE
+nginx                                               v3        45eeb9662c35   12 hours ago    133MB
+nginx                                               v2        22ca850c170e   24 hours ago    133MB
+nginx                                               latest    4cdc5dd7eaad   5 days ago      133MB
+<none>                                              <none>    355a832ad5f3   2 weeks ago     1.14GB
+ubuntu                                              20.04     9873176a8ff5   3 weeks ago     72.7MB
+mysql                                               8.0       c0cdc95609f1   2 months ago    556MB
+mysql                                               8.0.25    c0cdc95609f1   2 months ago    556MB
+mysql                                               latest    c0cdc95609f1   2 months ago    556MB
+registry                                            latest    1fd8e1b0bb7e   2 months ago    26.2MB
+centos                                              latest    300e315adb2f   7 months ago    209MB
+
+chyi in openmediavault in ~ via 🐍 v3.8.6
+❯ docker pull 127.0.0.1:5000/mysql:lastest
+lastest: Pulling from mysql
+Digest: sha256:68b207d01891915410db3b5bc1f69963e3dc8f23813fd01e61e6d7e7e3a46680
+Status: Downloaded newer image for 127.0.0.1:5000/mysql:lastest
+127.0.0.1:5000/mysql:lastest
+
+chyi in openmediavault in ~ via 🐍 v3.8.6
+❯ docker images
+REPOSITORY                                          TAG       IMAGE ID       CREATED         SIZE
+nginx                                               v3        45eeb9662c35   12 hours ago    133MB
+nginx                                               v2        22ca850c170e   24 hours ago    133MB
+nginx                                               latest    4cdc5dd7eaad   5 days ago      133MB
+<none>                                              <none>    355a832ad5f3   2 weeks ago     1.14GB
+ubuntu                                              20.04     9873176a8ff5   3 weeks ago     72.7MB
+127.0.0.1:5000/mysql                                lastest   c0cdc95609f1   2 months ago    556MB
+mysql                                               8.0       c0cdc95609f1   2 months ago    556MB
+mysql                                               8.0.25    c0cdc95609f1   2 months ago    556MB
+mysql                                               latest    c0cdc95609f1   2 months ago    556MB
+registry                                            latest    1fd8e1b0bb7e   2 months ago    26.2MB
+centos                                              latest    300e315adb2f   7 months ago    209MB
+```
+
+* 数据共享与持久化
+```
+# 容器中管理数据的两种方式:
+    数据卷 Data Volumes
+    挂在主机目录 Bind mounts
+
+# 数据卷: 一个可供一个或多个容器使用的特殊目录，绕过UFS
+> 数据卷的使用，类似Linux下对目录或文件进行mount,镜像中被指定为挂载点的目录中文件被隐藏掉，只能看到挂载的数据卷
+    1. 可以在容器之间共享和重用
+    2. 对数据卷的修改会立马生效
+    3. 对数据卷的更新，不会影响镜像
+    4. 数据卷默认会一直存在，即使容器被删除
+
+# 创建一个数据卷
+❯ docker volume create my-vol
+my-vol
+
+# 查看所有的数据卷
+❯ docker volume ls
+DRIVER    VOLUME NAME
+local     my-vol
+
+# 查看指定数据卷的信息
+❯ docker volume inspect my-vol
+[
+    {
+        "CreatedAt": "2021-07-13T07:14:19+08:00",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/mnt/INNERDISK/docker/volumes/my-vol/_data",
+        "Name": "my-vol",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+
+# 删除数据卷
+❯ docker volume rm my-vol
+my-vol
+
+# 清理无用的数据卷
+❯ docker volume prune
+WARNING! This will remove all local volumes not used by at least one container.
+Are you sure you want to continue? [y/N] y
+Deleted Volumes:
+mysql_my-db
+redis_redis-cluster_data-0
+redis_redis-cluster_data-3
+redis_redis-cluster_data-4
+a82b0ea8f07089d65e85341ce649850280288f9e0944cca79462999e6ad7d23a
+redis_redis-cluster_data-1
+redis_redis-cluster_data-2
+redis_redis-cluster_data-5
+
+Total reclaimed space: 383.5MB
+
+# Docker 挂载主机目录默认权限是读写，用户可以通过增加readonly指定只读
+$ docker run -d -P \
+    --name web \
+    --mount type=bind,source=/src/webapp,target=/opt/webapp,readonly \
+    training/webapp \
+    python app.py
+```
+
+* Docker 网络模式
+```
+# Bridge 模式
+> 当Docker进程启动时，会在主机上创建docker0的虚拟网桥,此主机启动的Docker容器会连接到这个虚拟网桥上,虚拟网桥的工作方式和物理交换机类似，这样主机上的所有容器就通过交换机连在一个二层网络中，从docker0子网中分配一个IP给容器使用，并设置docker0的IP地址为容器的默认网关。
+
+# Linux系统网桥管理工具brctl
+$ apt-get install bridge-utils
+$ brctl addbr br0 # 添加网桥br0
+$ sudo ifconfig br0 192.168.100.1 netmask 255.255.255.0
+$ sudo brctl show # 现实所有的网桥信息
+$ sudo brctl show br0 # 显示某个网桥br0的信息
+$ sudo brctl delbr br0 # 删除网桥br0
+$ brctl addif br0 eth0 # 将eth0端口加入网桥br0
+$ brctl delif br0 eth0 # 从网桥br0中删除eth0端口
 ```
 
 ## Kubeadm 搭建Kubernetes集群
