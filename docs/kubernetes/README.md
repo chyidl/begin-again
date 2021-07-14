@@ -459,18 +459,151 @@ $ docker run -d -P \
 * Docker 网络模式
 ```
 # Bridge 模式
-> 当Docker进程启动时，会在主机上创建docker0的虚拟网桥,此主机启动的Docker容器会连接到这个虚拟网桥上,虚拟网桥的工作方式和物理交换机类似，这样主机上的所有容器就通过交换机连在一个二层网络中，从docker0子网中分配一个IP给容器使用，并设置docker0的IP地址为容器的默认网关。
+> 当Docker进程启动时，会在主机上创建docker0的虚拟网桥,此主机启动的Docker容器会连接到这个虚拟网桥上,虚拟网桥的工作方式和物理交换机类似，这样主机上的所有容器就通过交换机连在一个二层网络中，从docker0子网中分配一个IP给容器使用，并设置docker0的IP地址为容器的默认网关。主机上创建一对虚拟网卡 veth pair设备，Docker将veth
+> pair设备的一端放在新创建的容器中，并命名为eth0(容器网卡),另一端放在主机中，以vethxx,并将网络设备加入到docker0网桥中
+
+# 启动两个ubuntu 容器
+    ❯ docker run -tid --net=bridge --name docker_bri1 ubuntu
+    ❯ docker run -tid --net=bridge --name docker_bri2 ubuntu
+#
+    ❯ brctl show docker0
+    bridge name     bridge id               STP enabled     interfaces
+    docker0         8000.02426e1fd182       no              veth27b2afa
+                                                            veth7dc5bcc
+                                                            vethb98ebf2
+# bridge 模式是docker默认网络模式
+    ❯ docker exec -it docker_bri1 /bin/bash
+    root@68f1084b3e46:/# ifconfig -a
+    eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+            inet 172.17.0.3  netmask 255.255.0.0  broadcast 172.17.255.255
+            ether 02:42:ac:11:00:03  txqueuelen 0  (Ethernet)
+            RX packets 4654  bytes 18911842 (18.9 MB)
+            RX errors 0  dropped 0  overruns 0  frame 0
+            TX packets 3751  bytes 255106 (255.1 KB)
+            TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+    lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+            inet 127.0.0.1  netmask 255.0.0.0
+            loop  txqueuelen 1000  (Local Loopback)
+            RX packets 0  bytes 0 (0.0 B)
+            RX errors 0  dropped 0  overruns 0  frame 0
+            TX packets 0  bytes 0 (0.0 B)
+            TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+    root@68f1084b3e46:/# route -n
+    Kernel IP routing table
+    Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+    0.0.0.0         172.17.0.1      0.0.0.0         UG    0      0        0 eth0
+    172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 eth0
 
 # Linux系统网桥管理工具brctl
-$ apt-get install bridge-utils
-$ brctl addbr br0 # 添加网桥br0
-$ sudo ifconfig br0 192.168.100.1 netmask 255.255.255.0
-$ sudo brctl show # 现实所有的网桥信息
-$ sudo brctl show br0 # 显示某个网桥br0的信息
-$ sudo brctl delbr br0 # 删除网桥br0
-$ brctl addif br0 eth0 # 将eth0端口加入网桥br0
-$ brctl delif br0 eth0 # 从网桥br0中删除eth0端口
+    $ apt-get install bridge-utils
+    $ brctl addbr br0 # 添加网桥br0
+    $ sudo ifconfig br0 192.168.100.1 netmask 255.255.255.0
+    $ sudo brctl show # 现实所有的网桥信息
+    $ sudo brctl show br0 # 显示某个网桥br0的信息
+    $ sudo brctl delbr br0 # 删除网桥br0
+    $ brctl addif br0 eth0 # 将eth0端口加入网桥br0
+    $ brctl delif br0 eth0 # 从网桥br0中删除eth0端口
+
+# 将容器加入自定义Docker网络连接多个容器
+# -d: 指定Docker网络类型
+    $ docker network create -d bridge my-net
+
+# 运行容器1并连接新建的my-net网络
+    ❯ docker run -it --rm --name busybox1 --network my-net busybox sh
+    / # ping busybox2
+    PING busybox2 (172.23.0.3): 56 data bytes
+    64 bytes from 172.23.0.3: seq=0 ttl=64 time=0.268 ms
+    64 bytes from 172.23.0.3: seq=1 ttl=64 time=0.269 ms
+
+# 运行容器2并连接新建的my-net网络
+    ❯ docker run -it --rm --name busybox2 --network my-net busybox sh
+    / # ping busybox1
+    PING busybox1 (172.23.0.2): 56 data bytes
+    64 bytes from 172.23.0.2: seq=0 ttl=64 time=0.358 ms
+    64 bytes from 172.23.0.2: seq=1 ttl=64 time=0.270 ms
+
+# Host模式
+> 容器将和宿主主机共用一个Network Namespace, 容器将会使用宿主主机的IP和端口
+
+# Container 模式
+> 新创建的容器和已经存在的容器共享一个Network Namespace, 新创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP和端口范围
+
+# None模式
+> Docker 容器拥有自己的Network Namespace,但是并不为Docker容器进行任何网络配置，Docker容器没有网卡、IP、路由信息，需要自己为Docker容器添加网卡、配置IP
 ```
+
+* Docker Compose
+> Docker Compose 是Docker官方编排Orchestration项目，负责快速部署分布式应用，
+> Compose 定位是定义和运行多个Docker容器的应用（Defining and running multi-container Docker applications), docker-compose.yaml 模版文件定义一组相互关联的应用容器
+```
+# Compose 两个重要概念
+service: 服务，一个应用的容器，可以包含若干运行相同镜像的容器实例
+project: 项目, 由一组关联的应用容器组成的完整业务单元
+
+# 安装 compose
+$ sudo pip install -U docker-compose
+
+❯ docker-compose --version
+docker-compose version 1.29.1, build c34c88b2
+
+# Python 建立能够访问次数的Web网站
+[web-demo](./docker-compose/web-demo)
+
+$ docker-compose [-f=<args>...] [options] [COMMAND] [ARGS...]
+
+$ docker-compose config # 验证Compose文件格式是否正确，若正确则现实配置，若格式错误现实错误原因
+```
+
+* Docker Machine
+> 负责在多种平台快速安装Docker 环境
+```
+Docker Machine 是Docker官方提供的一个工具，可以帮助在远程的机器上安装Docker，
+# Install Docker Machine (Linux)
+$ base=https://github.com/docker/machine/releases/download/v0.16.0 \
+  && curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine \
+  && sudo mv /tmp/docker-machine /usr/local/bin/docker-machine \
+  && chmod +x /usr/local/bin/docker-machine
+
+# Check the installation by displaying the Machine version
+❯ docker-machine -v
+docker-machine version 0.16.0, build 702c267f
+
+# Install VirtualBox
+1. Add virtualbox.list to /etc/apt/sources.list.d
+deb http://download.virtualbox.org/virtualbox/debian buster contrib
+
+2. Add Oracle VirtualBox public key:
+$ wget https://www.virtualbox.org/download/oracle_vbox_2016.asc2.
+$ sudo apt-key add oracle_vbox_2016.asc
+
+3. Install virtuabox-6.1
+$ sudo apt-get update
+$ sudo apt-get install virtualbox-6.1
+
+# 创建本地主机实例Virtualbox驱动 创建一台Docker主机
+$ docker-machine create -d virtualbox test 
+
+```
+
+* Docker Swarm
+> Swarm 是使用SwarmKit构建Docker引擎内置原生的集群管理和编排工具,提供Docker容器集群服务，是Docker官方对容器生态进行支持的核心方案
+> 用户可以将多个Docker主机封装为单个大型的虚拟Docker主机，快速打造一套容器云平台，Swarm mode内置kv存储功能，提供众多的新特性，具有容错能力的去中心化设计、内置服务发现、负载均衡、路由网格、动态伸缩、滚动更新、安全传输。使得Docker原生的Swarm集群具备Mess、Kubernetes竞争能力
+
+    * 节点
+        * 管理节点 manager:
+            > 用于Swarm集群的管理,一个Swarm集群可以有多个管理节点，但只有一个管理节点可以成为leader,leader通过raft协议实现
+        * 工作节点 worker:
+            > 任务执行节点，管理节点将服务service下发到工作节点执行，
+![docker-swarm-structure](../../misc/kubenetes/docker-swarm-structrue.png)
+    * Task: 任务是Swarm中最小的调度单位
+    * Services: 一组任务的集合, 服务定义了任务的属性
+        * replicated services: 按照规则在各个工作节点上运行指定个数的任务
+        * global services: 每个工作节点上运行一个任务
+![docker-swarm-task-service](../../misc/kubenetes/docker-swarm-task-service.png)
+
+
 
 ## Kubeadm 搭建Kubernetes集群
 
