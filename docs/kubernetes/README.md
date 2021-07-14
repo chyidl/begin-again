@@ -566,6 +566,9 @@ $ base=https://github.com/docker/machine/releases/download/v0.16.0 \
   && sudo mv /tmp/docker-machine /usr/local/bin/docker-machine \
   && chmod +x /usr/local/bin/docker-machine
 
+# macOS install virtualbox
+$ brew cask install virtualbox
+
 # Check the installation by displaying the Machine version
 ❯ docker-machine -v
 docker-machine version 0.16.0, build 702c267f
@@ -583,8 +586,7 @@ $ sudo apt-get update
 $ sudo apt-get install virtualbox-6.1
 
 # 创建本地主机实例Virtualbox驱动 创建一台Docker主机
-$ docker-machine create -d virtualbox test 
-
+$ docker-machine create -d virtualbox test
 ```
 
 * Docker Swarm
@@ -603,6 +605,12 @@ $ docker-machine create -d virtualbox test
         * global services: 每个工作节点上运行一个任务
 ![docker-swarm-task-service](../../misc/kubenetes/docker-swarm-task-service.png)
 
+* Docker 多阶段构建
+> Docker Build,Ship,and Run Any App, Anywhere.
+```
+# 构建golong服务,构建最小的Docker镜像
+
+```
 
 
 ## Kubeadm 搭建Kubernetes集群
