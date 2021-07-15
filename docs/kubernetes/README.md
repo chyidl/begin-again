@@ -605,13 +605,10 @@ $ docker-machine create -d virtualbox test
         * global services: 每个工作节点上运行一个任务
 ![docker-swarm-task-service](../../misc/kubenetes/docker-swarm-task-service.png)
 
-* Docker 多阶段构建
-> Docker Build,Ship,and Run Any App, Anywhere.
-```
-# 构建golong服务,构建最小的Docker镜像
-
+* Dockerfile 最佳实践
 ```
 
+```
 
 ## Kubeadm 搭建Kubernetes集群
 
@@ -625,3 +622,18 @@ $ docker-machine create -d virtualbox test
 
 ## Kubenetes CI/CD
 
+
+### FAQ:
+
+* [12 Factor](https://12factor.net/zh_cn/)
+```
+12-Factor 为构建SaaS应用提供方法论
+SaaS: 软件即服务
+现在软件通常会作为一种服务来交付，也被称为网络应用程序
+    1. 使用标准化流程自动配置，从而使新的开发者花费最少的学习成本加入这个项目
+    2. 和操作系统之间尽可能的划清界限，在各个系统中提供最大的可移植性
+    3. 适合部署在现代的云计算平台，从而在服务器和系统管理方面节省资源
+    4. 将开发环境和生产环境的差异降至最低，并使用持续交付实施敏捷开发
+    5. 可以在工具、架构和开发流程不发生明显变化的前提下实现扩展
+
+```
