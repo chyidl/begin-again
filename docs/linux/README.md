@@ -136,6 +136,44 @@ p   linux-image-rt-amd64-dbg                                                    
 chyi in openmediavault in ~ via 🐍 v3.8.6 took 2s
 ❯ sudo apt -t buster-backports upgrade
 
-# After the upgrade, can simply perform a reboot and the new kernel should be activated as the new default
+# Install a specific kernel version
+❯ sudo apt install linux-image-5.10.0-0.bpo.7-rt-amd64
 
+# After the upgrade, can simply perform a reboot and the new kernel should be activated as the new default
+❯ uname -r
+5.10.0-0.bpo.7-rt-amd64
+
+# Uninstalling unused kernels in Debian
+❯ dpkg --get-selections | grep linux-image
+linux-image-4.19.0-14-amd64			deinstall
+linux-image-4.19.0-16-amd64			deinstall
+linux-image-4.19.0-17-amd64			install
+linux-image-5.10.0-0.bpo.7-rt-amd64		install
+linux-image-amd64				install
+
+# Uninstall the old one:
+❯ sudo apt remove linux-image-4.19.0-17-amd64
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following packages will be REMOVED:
+  linux-image-4.19.0-17-amd64 linux-image-amd64
+0 upgraded, 0 newly installed, 2 to remove and 0 not upgraded.
+After this operation, 270 MB disk space will be freed.
+Do you want to continue? [Y/n] Y
+(Reading database ... 215702 files and directories currently installed.)
+Removing linux-image-amd64 (4.19+105+deb10u12) ...
+Removing linux-image-4.19.0-17-amd64 (4.19.194-1) ...
+I: /vmlinuz.old is now a symlink to boot/vmlinuz-5.10.0-0.bpo.7-rt-amd64
+I: /initrd.img.old is now a symlink to boot/initrd.img-5.10.0-0.bpo.7-rt-amd64
+/etc/kernel/postrm.d/initramfs-tools:
+update-initramfs: Deleting /boot/initrd.img-4.19.0-17-amd64
+/etc/kernel/postrm.d/zz-update-grub:
+Generating grub configuration file ...
+Found background image: /usr/share/images/desktop-base/desktop-grub.png
+Found linux image: /boot/vmlinuz-5.10.0-0.bpo.7-rt-amd64
+Found initrd image: /boot/initrd.img-5.10.0-0.bpo.7-rt-amd64
+done 
 ```
+
+
