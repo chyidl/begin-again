@@ -5,7 +5,9 @@
     * Support for previously unsupported hardware
     * Performance improvements and bug fixes
     * New kernel optoons and security fixes
-![Install a newer kernel in Debian 10 (buster) stable](https://jensd.be/968/linux/install-a-newer-kernel-in-debian-10-buster-stable)
+
+[Install a newer kernel in Debian 10 (buster) stable](https://jensd.be/968/linux/install-a-newer-kernel-in-debian-10-buster-stable)
+
 ```
 chyi in openmediavault in ~ via 🐍 v3.8.6
 ❯ cat /etc/debian_version
