@@ -620,10 +620,65 @@ $ docker-machine create -d virtualbox test
 # RUN: 为了保持Dockerfile文件的可读性以及可维护性，建议将长的或复杂的RUN指令用反斜杠、分割成多行
     RUN apt-get update && apt-get install -y \
         vim
-# CMD: ["executable", "param1", "param2"...] 
+# CMD: ["executable", "param1", "param2"...]
+
+# EXPOSE: 指定容器将要监听的端口
+
+# ENV: 使用ENV为容器中安装的程序更新PATH环境变量
+
+# COPY -> 支持简单的将本地文件拷贝到容器中
+# ADD: 支持本地tar提取和远程URL支持
+
+# ENTRYPOINT:
+
+# VOLUME: 暴露任何数据库存储文件，配置文件，或容器创建的文件和目录
+
+# USER: 如果某个服务不需要特权执行，建议使用USER指令切换到非root用户，现在Dockerfile中使用RUN groupadd -r postgres && useradd -r -g postgres postgres 指令创建用户和用户组
+
+# WORKDIR: 在WORKDIR中使用绝对路径
+
+# ONBUILD <其他指令>: ONBUILD是特殊指令，只有当前镜像为基础镜像，去构建下一级镜像的时候才会被执行，Dockerfile中的其他指令都是为定制当前镜像而准备，唯有ONBUILD是为帮助别人定制自己而准备
+```
+
+## kubenetes
+```
+# kubenetes cluster
+    Master: 负责管理集群
+        > master 协调集群中的所有活动，调度应用程序、维护应用程序的所需状态、扩展应用程序和滚动更新
+    Node: 工作节点是Kubernetes集群中的工作机器，可以是物理机或虚拟机
+        > kubelet 是管理节点并与Kubernetes Master 节点进行通信的代理
+        > 节点具有处理容器操作的容器运行时 Docker或rkt
+
+一个Kubernetes工作集群至少有三个节点，Master管理集群，Node节点用于托管正在运行的应用程序
+
+Pod: 是一组紧密关联的容器集合，他们共享PID、IPC、Network和UTS namespace, 是kubernetes 调度的基本单位.
+    Pod 的设计理念是支持多个容器在一个Pod中共享网络和文件系统,可以通过进程间通信和文件共享简单高效的方式组合完成服务.
+
+Kubernetes 中所有对象都使用manifest（yaml或json）定义
+```
+[nginx.yaml](./base/nginx.yaml)
+
+```
+Label: 识别Kubernetes对象的标签,以key/value 的方式附加到对象上 (key最长不能超过64bytes, value可以为空，也可以不超过253字节的字符串)
+
+Label Selector: 筛选一组相同的Label对象
+    Label Selector支持一下方式:
+        1. 等式：app=nginx env!=production
+        2. 集合: env in (production, qa)
+        3. AND关系: app=nginx,env=test
+
+Namespace: 是对一组资源和对象的抽象集合,可以用
+```
+
+## minikube start
+> minikube is local Kubernetes, focusing on making it easy to learn and develop for Kubernets
+```
+# Installation
+
 ```
 
 ## Kubeadm 搭建Kubernetes集群
+
 
 ## Kubernetes 集群运行远离
 
