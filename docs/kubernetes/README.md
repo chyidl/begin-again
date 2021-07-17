@@ -659,6 +659,20 @@ Kubernetes 中所有对象都使用manifest（yaml或json）定义
 [nginx.yaml](./base/nginx.yaml)
 
 ```
+Master: Master节点是Kubernetes集群的控制节点, 负责整个集群的管理和控制
+    Master节点包含一下组件:
+        kube-apiserver: 集群控制的入口，提供HTTP REST服务
+        kube-controller-manager: Kubernetes 集群中所有资源对象的自动化控制中心
+        kube-scheduler: 负责Pod的调度
+
+Node: Node节点是Kubernetes集群中的工作节点
+    Node节点包含一下组件:
+        kubelet: 负责Pod的创建、启动、监控、重启、销毁等工作,同时与Master节点协作，实现集群管理的基本功能
+        kube-proxy: 实现Kubernetes Service的通信和负载均衡
+        运行容器化(Pod)应用
+
+Pod: Pod 是Kubernetes最基本的部署调度单元,
+
 Label: 识别Kubernetes对象的标签,以key/value 的方式附加到对象上 (key最长不能超过64bytes, value可以为空，也可以不超过253字节的字符串)
 
 Label Selector: 筛选一组相同的Label对象
@@ -667,7 +681,16 @@ Label Selector: 筛选一组相同的Label对象
         2. 集合: env in (production, qa)
         3. AND关系: app=nginx,env=test
 
-Namespace: 是对一组资源和对象的抽象集合,可以用
+Namespace: 是对一组资源和对象的抽象集合,常见的pods, services, deployments都是属于某一个namespace, Node, PersistenVolumes 则不属于任何namespace
+
+Deployment: 确保任意时间都有指定数量的Pod"副本"在运行
+    创建Deployment需要指定两个东西:
+        Pod模板: 用来创建Pod副本的模板
+        Label标签: Deployment需要监控的Pod标签
+
+Service: 是应用服务的抽象，通过labels为应用提供负载均衡和服务发现. 匹配labels的Pod IP 和端口列表组成endpoints, 由kube-proxy负责将服务IP负载均衡到这些endpoints. 每一个service都会自动分配一个cluster IP (仅在集群内部可访问的虚拟地址) 和 DNS名，其他容器可以通过改地址或DNS来访问服务，而不需要了解后端容器的运行
+
+
 ```
 
 ## minikube start

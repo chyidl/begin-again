@@ -1,5 +1,7 @@
 # Python Tips
 
+[Python Tips](https://book.pythontips.com/en/latest/)
+
 
 Table of Contents
 -----------------
