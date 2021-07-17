@@ -60,5 +60,19 @@ postgres=# SELECT '2000-01-01 00:00:00 +05:00'::timestamp as "Timestamp without 
 "timestamp without time zone" ("aka timestamp") means "timestamp offset unaware"
 "timestamp with time zone" ("aka timestamptz") means "timestamp offset aware"
 
+1. Using timestamp without time zone (timestamp)
 
+develop=# SELECT ('2000-01-01 00:00:00 +00:00'::timestamp)::timestamptz at time zone 'Asia/Shanghai' as "Shanghai timestamp";
+ Shanghai timestamp
+---------------------
+ 2000-01-01 08:00:00
+(1 row)
+
+2. Using timestamp with time zone (timestamptz)
+
+develop=# SELECT '2000-01-01 00:00:00 +00:00'::timestamptz at time zone 'Asia/Shanghai' as "Shanghai timestamp";
+ Shanghai timestamp
+---------------------
+ 2000-01-01 08:00:00
+(1 row)
 ```

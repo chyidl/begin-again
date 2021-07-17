@@ -671,7 +671,13 @@ Node: Node节点是Kubernetes集群中的工作节点
         kube-proxy: 实现Kubernetes Service的通信和负载均衡
         运行容器化(Pod)应用
 
-Pod: Pod 是Kubernetes最基本的部署调度单元,
+Pod: Pod 是Kubernetes最基本的部署调度单元, 每个Pod可以由一个或多个业务容器和一个根容器(Pause容器)组成，一个Pod表示某个应用的一个实例
+
+ReplicaSet: 是Pod副本的抽象，用于解决Pod的扩容和伸缩
+
+Deployment: Deployment表示部署，在内部使用ReplicaSet实现
+
+Service: 是Kubernetes最重要的资源对象，Kubernetes中的Service对象可以对应为服务架构中的微服务.Service定义服务的访问入口，服务的调用者通过这个地址访问Service后端的Pod副本实例。Service通过Label Selector同后端的Pod副本建立关系，Deployment保证后端Pod副本的数量，也就保证服务的伸缩性
 
 Label: 识别Kubernetes对象的标签,以key/value 的方式附加到对象上 (key最长不能超过64bytes, value可以为空，也可以不超过253字节的字符串)
 
@@ -689,9 +695,37 @@ Deployment: 确保任意时间都有指定数量的Pod"副本"在运行
         Label标签: Deployment需要监控的Pod标签
 
 Service: 是应用服务的抽象，通过labels为应用提供负载均衡和服务发现. 匹配labels的Pod IP 和端口列表组成endpoints, 由kube-proxy负责将服务IP负载均衡到这些endpoints. 每一个service都会自动分配一个cluster IP (仅在集群内部可访问的虚拟地址) 和 DNS名，其他容器可以通过改地址或DNS来访问服务，而不需要了解后端容器的运行
-
-
 ```
+[Kubernetes 组件](../../misc/kubenetes/k8s-basic.png)
+```
+Kubernetes 主要由一下几个组件组成
+    etcd: 保存整个集群的状态数据库
+    apiserver: 提供资源操作的唯一入口，并提供认证、授权、访问控制、API注册和发现
+    controller manager: 负责维护集群的状态，故障检测、自动扩展、滚动更新
+    scheduler: 负责资源的调度、按照预定的调度策略将Pod调度到相应的机器上
+    kubelet: 负责维护容器的生命周期，同时负责Volume (CSI)和网络(CNI)的管理
+    container runtime: 负责镜像管理以及Pod和容器的真正运行CRI
+    kube-proxy: 负责Service 提供cluster内部的服务发现和负载均衡
+
+    kube-dns: 负责为整个集群提供DNS服务
+    Ingress Controller: 为服务提供外网入口
+    Heapster: 提供资源监控
+    Dashboard: 提供GUI
+
+Kubernets 组件通信
+    apiserver: 负责etcd存储的所有操作，且只有apiserver才直接操作etcd集群
+    apiserver对内（集群中的其他组件）和对外(用户)提供统一的REST API, 其他组件均通过apiserver 进行通信
+        controller manager, scheduler, kube-proxy, kubelet 通过apiserver watch API 检测资源变化情况，并对资源作相应的操作
+        所有需要更新资源状态的操作均通过apiserver 的REST API 进行
+    apiserver 会直接调用kubelet API (logs, exec, attach) 默认不校验kubelet证书，但可以通过--kubelet-certificate-authority 开启
+```
+* [创建Pod流程](../../misc/kubenetes/k8s-pod-process.png)
+    * 用户通过REST API创建一个Pod
+    * apiserver将其写入etcd
+    * scheduler 检测到未绑定Node的Pod,开始调度并更新Pod的Node绑定
+    * kubelet 检测到新的Pod调度过来，通过container runtime 运行该Pod
+    * kubelet 通过container runtime 取到Pod状态，并更新到apiserver中
+
 
 ## minikube start
 > minikube is local Kubernetes, focusing on making it easy to learn and develop for Kubernets
