@@ -1,5 +1,13 @@
 # Linux
 
+Table of Contents
+-----------------
+
+* [Install a newer kernel in Debian 10 (Buster) stable](#install_newer_kernel_in_debian)
+* [Copying an operating system image to an SD card/USB using dd](#dd_install_image_usb)
+
+install_newer_kernel_in_debian
+------------------------------
 ### Install a newer kernel in Debian 10 (Buster) stable
 * the benefits of upgrading kernel
     * Support for previously unsupported hardware
@@ -174,6 +182,52 @@ Found background image: /usr/share/images/desktop-base/desktop-grub.png
 Found linux image: /boot/vmlinuz-5.10.0-0.bpo.7-rt-amd64
 Found initrd image: /boot/initrd.img-5.10.0-0.bpo.7-rt-amd64
 done 
+
+# Downgrade all backports packages to stable
+Solution:
+
+➜ cat /etc/apt/preferences
+Explanation: Uninstall or do not install any Debian-originated
+Explanation: package versions other than those in the stable distro
+Package: *
+Pin: release a=stable
+Pin-Priority: 2000
+
+Package: *
+Pin: release o=Debian
+Pin-Priority: -10
+```
+
+dd_install_image_usb
+--------------------
+```
+➜ diskutil list
+/dev/disk0 (internal, physical):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                        *121.3 GB   disk0
+   1:                        EFI EFI                     209.7 MB   disk0s1
+   2:                 Apple_APFS Container disk1         121.1 GB   disk0s2
+
+/dev/disk1 (synthesized):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      APFS Container Scheme -                      +121.1 GB   disk1
+                                 Physical Store disk0s2
+   1:                APFS Volume mac                     15.3 GB    disk1s1
+   2:              APFS Snapshot com.apple.os.update-... 15.3 GB    disk1s1s1
+   3:                APFS Volume Preboot                 312.4 MB   disk1s2
+   4:                APFS Volume Recovery                622.9 MB   disk1s3
+   5:                APFS Volume VM                      3.2 GB     disk1s4
+   6:                APFS Volume mac - 数据              28.5 GB    disk1s7
+
+/dev/disk2 (external, physical):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:     FDisk_partition_scheme                        *2.0 GB     disk2
+   1:                 DOS_FAT_16 NO NAME                 2.0 GB     disk2s1
+
+# The disk must be unmounted before 
+
+# Erase the SD card's partition table 
+$ sudo diskutil partitionDisk /dev/diskN 1 MBR "Free Space" "%noformat%" 100%
 ```
 
 

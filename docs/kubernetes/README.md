@@ -719,7 +719,7 @@ Kubernets 组件通信
         所有需要更新资源状态的操作均通过apiserver 的REST API 进行
     apiserver 会直接调用kubelet API (logs, exec, attach) 默认不校验kubelet证书，但可以通过--kubelet-certificate-authority 开启
 ```
-* [创建Pod流程](../../misc/kubenetes/k8s-pod-process.png)
+![创建Pod流程](../../misc/kubenetes/k8s-pod-process.png)
     * 用户通过REST API创建一个Pod
     * apiserver将其写入etcd
     * scheduler 检测到未绑定Node的Pod,开始调度并更新Pod的Node绑定
@@ -727,15 +727,38 @@ Kubernets 组件通信
     * kubelet 通过container runtime 取到Pod状态，并更新到apiserver中
 
 
-## minikube start
-> minikube is local Kubernetes, focusing on making it easy to learn and develop for Kubernets
-```
-# Installation
-
-```
-
 ## Kubeadm 搭建Kubernetes集群
 
+![Kubernetes high-level component architecture](../../misc/kubenetes/k8s-structure.jpeg)
+    * 核心层: Kubernetes 最核心的功能，对外提供API构建高层的应用，对内提供插件式应用执行环境
+    * 应用层: 部署(无状态应用、有状态应用、批处理任务、集群应用) 和路由(服务发现、DNS解析)
+    * 管理层: 系统度量 (基础设施、容器和网络的度量)，自动化(自动扩展、动态Privision) 以及策略管理(RBAC、Quota, PSP, NetworkPolicy)
+    * 接口层: kubectl 命令行工具，客户端SDK以及集群
+    * 生态系统:
+        kubernetes 外部: 日志、监控、配置管理、CI、CD、Workflow
+        Kubernetes 内部: CRI 、CNI、CVI、镜像仓库、Cloud Provider、集群自身的配置和管理
+
+Control-plane node(s)
+|Protocol | Direction | Port Range | Used By
+|:--------|:----------|:-----------|:-------|
+|TCP|Inbound|6443*| kubernetes API server | All|
+|TCP|Inbound|2379-2380|etcd server client API| kube-apiserver, etcd|
+|TCP|Inbound|10250|kubelet API| self, Control plane|
+|TCP|Inbound|10251|kube-scheduler|Self|
+|TCP|Inbound|10252|kube-controller-manager|Self|
+
+Worker node(s)
+|Protocol|Direction|Port Range| Purpose| Used By|
+|:-------|:--------|:---------|:-------|:-------|
+|TCP|Inbound|10250|kubelet API| Self, Control plane|
+|TCP|Inbound|30000-32767|NodePort Services| All|
+
+* Installing kubeadmin, kubelet and kubectl
+```
+kubeadm: the command to bootstrap the cluster
+kubelet: the component that runs on all of machines in your cluster and does things like starting pods and containers
+kubelet: the command line util to talk to your cluster
+```
 
 ## Kubernetes 集群运行远离
 
