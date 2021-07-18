@@ -758,6 +758,19 @@ Worker node(s)
 kubeadm: the command to bootstrap the cluster
 kubelet: the component that runs on all of machines in your cluster and does things like starting pods and containers
 kubelet: the command line util to talk to your cluster
+
+# Configuring a cgroup driver
+
+#       --kubernetes-version string            Choose a specific Kubernetes version for the control plane. (default "stable-1")
+#       --pod-network-cidr string              Specify range of IP addresses for the pod network. If set, the control plane will automatically allocate CIDRs for every node.
+#       --apiserver-advertise-address string   The IP address the API Server will advertise it's listening on. If not set the default network interface will be used.
+#       --ignore-preflight-errors strings      A list of checks whose errors will be shown as warnings. Example: 'IsPrivilegedUser,Swap'. Value 'all' ignores errors from all checks.
+$ kubeadm init \
+    --kubernetes-version=v1.10.0 \
+    --pod-network-cidr=10.244.0.0/16 \
+    --apiserver-advertise-address=172.30.1.14
+    
+
 ```
 
 ## Kubernetes 集群运行远离
