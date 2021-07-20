@@ -25,9 +25,13 @@
     listen()
     accept()
     connect()
+        three-way handshake: it ensures that each side of the connection is reachable in the network
     connect_ex()
     send()
+    send_all()
+        continues to send data from bytes until either all data has been sent or an error occurs.
     recv()
+        recv(1024): bufsize argument of 1024 used above is the maximum amount of data to be received at once.
     close()
 
 # TCP (Transmission Control Protocol):
@@ -37,18 +41,6 @@
 # UDP (User Datagram Protocol)
 ```
 ![Socket TCP Flow](../../../../../misc/network/sockets-tcp-flow.png)
-```
-socket()
-bind()
-listen(): listens for connections from clients
-accept():
-connect():
-    three-way handshake: it ensures that each side of the connection is reachable in the network
-connect_ex()
-send()
-recv()
-close()
-```
 
 * Viewing Socket State
 ```
@@ -61,6 +53,21 @@ tcp4       0      0 127.0.0.1.65432         *.*                     LISTEN
 ➜ lsof -i -n | grep 65432
 COMMAND     PID   USER   FD    TYPE   DEVICE                SIZE/OFF                NODE NAME
 Python    33627 yogo    3u     IPv4  0x558cb2b475a99ad         0t0                  TCP localhost:65432 (LISTEN)
+```
+
+* lookback
+```
+loopback interface (IPv4 address 127.0.0.1 or IPv6 address ::1)
+```
+
+* Handling Multiple Connections
+```
+select():
+    allow to check for I/O completion on more than one socket.
+    call select() to see which sockets have I/O ready for reading and/or writing.
+
+asyncio:
+    use single-threaded cooperative multitasking and an event loop to manage tasks.
 ```
 
 * Communication Breakdown
