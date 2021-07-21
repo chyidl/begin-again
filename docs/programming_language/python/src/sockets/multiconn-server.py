@@ -1,19 +1,29 @@
 #!/usr/bin/env python3
-
 import sys
 import socket
 import selectors
 import types
 
+"""
+BaseSelector
+    - SelectSelector    : select.select()
+    - PollSelector      : select.poll()
+    - EpollSelector     : select.epoll()
+    - DevpollSelector   : select.devpoll()
+    - KqueueSelector    : select.kqueue()
+
+DefaultSelector: is an alias to the most efficient implementation available on the current platform
+"""
 sel = selectors.DefaultSelector()
 
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
-    print(f"accepted connection from", addr)
+    print(f"accepted {conn} from {addr}")
     conn.setblocking(False)  # configure the socket in non-blocking mode.
     data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
+    # register(fileobj, events, data=None)
     sel.register(conn, events, data=data)  # registers the socket to be monitored
 
 
@@ -45,6 +55,8 @@ lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lsock.bind((host, port))
 lsock.listen()
 print("listening on", (host, port))
+# sock.setblocking(True) is equivalent to sock.settimeout(None)
+# sock.setblocking(False) is equivalent to sock.settimeout(0.0)
 lsock.setblocking(False)
 sel.register(lsock.selectors.EVENT_READ, data=None)
 
