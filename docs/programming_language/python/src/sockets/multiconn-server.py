@@ -11,14 +11,14 @@ sel = selectors.DefaultSelector()
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
     print(f"accepted connection from", addr)
-    conn.setblocking(False)
+    conn.setblocking(False)  # configure the socket in non-blocking mode.
     data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
-    sel.register(conn, events, data=data)
+    sel.register(conn, events, data=data)  # registers the socket to be monitored
 
 
 def service_connection(key, mask):
-    sock = key.fileobj
+    sock = key.fileobj  # the socket object
     data = key.data
     if mask & selectors.EVENT_READ:
         recv_data = sock.recv(1024)  # Should be ready to read
@@ -47,3 +47,18 @@ lsock.listen()
 print("listening on", (host, port))
 lsock.setblocking(False)
 sel.register(lsock.selectors.EVENT_READ, data=None)
+
+
+try:
+    while True:
+        # blocks until there are sockets ready for I/O
+        events = sel.select(timeout=None)
+        for key, mask in events:
+            if key.data is None:
+                accept_wrapper(key.fileobj)
+            else:
+                service_connection(key, mask)
+except KeyboardInterrupt:
+    print("caught keyboard interrupt, exiting")
+finally:
+    sel.close()
