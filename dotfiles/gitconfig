@@ -1,0 +1,114 @@
+[user]
+    # set a name that is identifiable for credit when review version history
+    name = xxx
+    # set an email address that will be associated with each history marker
+    email = xxx@yogorobot.com
+    username = xxx
+[core]
+    editor = vim
+	excludesfile = ~/.gitignore
+	whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+[sendemail]
+	smtpencryption = tls
+	smtpserver = smtp.gmail.com
+	smtpuser =
+        smtppass =
+        smtpserverport = 587
+[web]
+	browser = google-chrome
+[color]
+    # set automatic command line coloring for Git for easy reviewing
+    status = auto
+    branch = auto
+    interactive = auto
+    diff = auto
+	ui = auto
+[alias]
+    freebase = pull --rebase
+    commit = commit -a -v
+    ci = commit
+    co = checkout
+    b = branch
+    nb = checkout -b
+    st = status
+    sl = stash list
+    sa = stash apply
+    sd = stash drop
+    quicklog = log --pretty=format:'%Cblue%h %Cred%cD %Creset%cn %Cgreen%s%Creset' --date-order --graph
+    changes = log --oneline --decorate
+    changelog = show --name-only
+    commitnumber = !git log --pretty=oneline | wc -l
+    difffile = !sh -c 'git diff HEAD $1 | mate -' -
+    worddiff = diff --word-diff
+    fakeignore = update-index --assume-unchanged
+    ignore = update-index --assume-unchanged
+    undo = reset --soft --keep HEAD^
+    dsf = !"git diff --color $@ | diff-so-fancy"
+    unstage = reset HEAD --
+    first = !sh -c 'git log origin/master --pretty=format:%H --reverse | head -1'
+    lasttag = !sh -c 'git log --simplify-by-decoration --decorate=short --tags --format="%H" | head -1'
+    wtf = !git-wtf
+    has = brach --contains
+    db = !sh -c 'git branch -D $1 && git push origin :$1' -
+    sweep = !sh -c 'git-sweep cleanup'
+    last = log -1 HEAD
+    lg = !"git lg1"
+    lg1 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(bold white)— %an%C(reset)%C(bold yellow)%d%C(reset)' --abbrev-commit --date=relative
+    lg2 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)— %an%C(reset)' --abbrev-commit
+    s = status --short --branch
+    cleanup = "!git branch --merged | grep  -v '\\*\\|master\\|develop\\|dev' | xargs -n 1 git branch -d; git remote prune origin"
+    # show difference between working tree and the index
+    unstaged = diff
+
+    # show difference between the HEAD and the index
+    staged = diff --cached
+
+    # show staged and unstaged changes (what would be commited with 'git commit -a')
+    both = diff HEAD
+    standup = !sh -c 'git log --pretty=format:\"%Cred%h%Creset - %Cgreen%cr%Creset : %s\" --since=\"`date -v-1d \"+%Y-%m-%d 00:00:00\"`\" --until=\"`date \"+%Y-%m-%d 00:00:00\"`\" --all --author=\"`git config --get user.name`\"'
+
+[core]
+    editor = vim
+    safecrlf = true
+[push]
+    default = current
+[branch]
+    autosetuprebase = always
+[rerere]
+    enabled = 1
+    autoupdate = 1
+[help]
+    autocorrect = 1
+[pager]
+    diff = diff-so-fancy | less --tabs=1,5 -RFX
+    show = diff-so-fancy | less --tabs=1,5 -RFX
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+[include]
+    path = ~/.gitconfig.local
+[github]
+	user = xxx
+[credential]
+	helper = osxkeychain
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	meta = 11
+	frag = magenta bold
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[http]
+	postBuffer = 524288000
+[pull]
+    rebase = true
+[diff]
+    tool = vimdiff
+# git-rerere - Reuse recorded resolution of conflicted merge
