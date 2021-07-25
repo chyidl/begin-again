@@ -58,9 +58,12 @@ print("listening on", (host, port))
 # sock.setblocking(True) is equivalent to sock.settimeout(None)
 # sock.setblocking(False) is equivalent to sock.settimeout(0.0)
 lsock.setblocking(False)
-sel.register(lsock.selectors.EVENT_READ, data=None)
+
+# Register a file object for selection, monitoring it for I/O events
+sel.register(lsock, selectors.EVENT_READ, data=None)
 
 
+# the event loop
 try:
     while True:
         # blocks until there are sockets ready for I/O

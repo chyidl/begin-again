@@ -70,4 +70,16 @@ asyncio:
     use single-threaded cooperative multitasking and an event loop to manage tasks.
 ```
 
+* Application Client and Server
+```
+# determine the byte order machine
+➜ python3 -c 'import sys; print(repr(sys.byteorder))'
+'little'
+
+# Application Protocol Header
+  Variable-length text
+  Unicode with the encoding UTF-8
+  A Python dictionary serialized using JSON
+```
+
 * Communication Breakdown
