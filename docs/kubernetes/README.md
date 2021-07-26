@@ -727,7 +727,14 @@ Kubernets 组件通信
     * kubelet 通过container runtime 取到Pod状态，并更新到apiserver中
 
 
-## Kubeadm 搭建Kubernetes集群
+## Install Kubernetes Cluster using kubeadm
+> Setting up a cluster with one master node and one worker node.
+
+    * Assumptions
+    | Role | IP | OS | RAM | CPU |
+    |:-----|:---|:---|:----|:----|
+    | Master| 172.30.1.23| Debian 10 | 8G | 4|
+    | Worker| 172.30.1.13| Ubuntu 20.04| 4G| 4|
 
 ![Kubernetes high-level component architecture](../../misc/kubenetes/k8s-structure.jpeg)
     * 核心层: Kubernetes 最核心的功能，对外提供API构建高层的应用，对内提供插件式应用执行环境
@@ -829,6 +836,35 @@ rtt min/avg/max/mdev = 19.629/20.061/20.494/0.455 ms
     $ sudo apt-get update
     $ sudo apt-get install -y kubelet kubeadm kubectl
     $ sudo apt-mark hold kubelet kubeadm kubectl
+
+Disable swap
+$ sudo swapoff -a
+
+Update sysctl settings for Kubernetes networking
+$ sudo vim /etc/sysctl.d/k8s.conf
+
+net.bridge.bridge-nf-call-iptables = 1 # 开启网桥模式(必须)
+net.bridge.bridge-nf-call-ip6tables = 1 # 开启网桥模式(必须)
+net.ipv6.conf.all.disable_ipv6 = 1 # 关闭IPv6协议(必须)
+net.ipv4.ip_forward = 1 # 转发模式(默认开启)
+vm.panic_on_oom=0 # 开启OOM(默认开启)
+vm.swappiness = 0 # 禁止使用swap空间
+vm.overcommit_memory=1 # 不检查物理内存是否够用
+fs.inotify.max_user_instances=8192
+fs.inotify.max_user_watches=1048576
+fs.file-max = 52706963 # 设置文件句柄数量
+fs.nr_open = 52706963 # 设置文件的最大打开数量
+net.netfilter.nf_conntrack_max = 2310720
+
+# 查看系统内核参数的方式
+$ sudo sysctl -a | grep xxx
+
+# 使内核参数配置文件生效
+$ sudo sysctl -p /etc/sysctl.d/k8s.conf
+
+# 设置系统时区为上海
+$ sudo timedatectl set-timezone Asia/Shanghai
+
 
 3. Initializing your control-plane node
 
