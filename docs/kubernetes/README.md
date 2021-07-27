@@ -1,4 +1,5 @@
 # Docker & Kubernetes
+[从Docker到Kubernetes进阶](https://www.qikqiak.com/k8s-book/)
 
 ## Docker 常用方法
 
@@ -997,7 +998,7 @@ This node has joined the cluster:
 Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
 ```
 
-## Kubernetes 集群运行远离
+## Kubernetes 集群运行原理
 
 ## Kubernetes 调度策略
 
