@@ -1,5 +1,4 @@
 # Docker & Kubernetes
-[从Docker到Kubernetes进阶](https://www.qikqiak.com/k8s-book/)
 
 ## Docker 常用方法
 
@@ -868,12 +867,11 @@ $ sudo timedatectl set-timezone Asia/Shanghai
 
 
 3. Initializing your control-plane node
-
 chyi in ~ at k8s-master took 5s
 ➜ sudo kubeadm init \
         --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \
         --apiserver-advertise-address=172.30.1.14 \
-        --pod-network-cidr=10.244.0.0/16 \
+        --pod-network-cidr=10.244.0.0/16 \  # 选择flannel作为Pod网络插件
         --service-cidr=10.245.0.0/16
 [init] Using Kubernetes version: v1.21.3
 [preflight] Running pre-flight checks
@@ -954,6 +952,51 @@ kubeadm join 172.30.1.14:6443 --token mq3wsc.lurzdk72kjwex5cb \
 chyi in ~ at k8s-master took 39s
 ➜
 
+chyi in ~ at k8s-master
+➜ kubectl get cs
+Warning: v1 ComponentStatus is deprecated in v1.19+
+NAME                 STATUS      MESSAGE                                                                                       ERROR
+scheduler            Unhealthy   Get "http://127.0.0.1:10251/healthz": dial tcp 127.0.0.1:10251: connect: connection refused
+controller-manager   Unhealthy   Get "http://127.0.0.1:10252/healthz": dial tcp 127.0.0.1:10252: connect: connection refused
+etcd-0               Healthy     {"health":"true"}
+
+# Modify the following files on all master nodes:
+$ sudo vim /etc/kubernetes/manifests/kube-scheduler.yaml
+    # Comment or delete the line: in (spec->containers->command->kube-scheudler)
+    - --port=0
+$ sudo vim /etc/kubernetes/manifests/kube-controller-manager.yaml
+    # Comment or delete the line: in (spec->containers->command->kube-controller-managed)
+    - --port=0
+
+$ sudo systemctl restart restart kubelet.service
+
+
+# ComponentStatus (and ComponentStatusList) holds the cluster validation info. Deprecated: This API is deprecated in v1.19+
+➜ kubectl get cs
+Warning: v1 ComponentStatus is deprecated in v1.19+
+NAME                 STATUS    MESSAGE             ERROR
+scheduler            Healthy   ok
+controller-manager   Healthy   ok
+etcd-0               Healthy   {"health":"true"}
+
+# Node is a worker node in Kubernetes. Each node will have a unique identifier in the cache (i.e. in etcd).
+chyi in ~ at k8s-master
+➜ kubectl get no
+NAME         STATUS   ROLES                  AGE     VERSION
+k8s-master   Ready    control-plane,master   2d20h   v1.21.3
+k8s-node1    Ready    worker                 2d8h    v1.21.3
+
+# Namespace provides a scope for Names. Use of multiple namespaces is optional.
+chyi in ~ at k8s-master
+➜ kubectl get ns
+NAME              STATUS   AGE
+default           Active   2d20h
+kube-node-lease   Active   2d20h
+kube-public       Active   2d20h
+kube-system       Active   2d20h
+
+
+# 安装Pod Network (flannel 网络插件)
 chyi in ~/.kube at k8s-master
 ➜ wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 --2021-07-25 11:15:13--  https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
@@ -965,7 +1008,6 @@ Saving to: ‘kube-flannel.yml’
 kube-flannel.yml                   100%[=============================================================>]   4.70K  --.-KB/s    in 0s
 
 2021-07-25 11:15:14 (13.6 MB/s) - ‘kube-flannel.yml’ saved [4813/4813]
-
 
 chyi in ~/.kube at k8s-master
 ➜ kubectl apply -f kube-flannel.yml
@@ -996,6 +1038,30 @@ This node has joined the cluster:
 * The Kubelet was informed of the new secure connection details.
 
 Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+
+
+
+# To deploy Dashboard, execute following command:
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml
+
+
+chyi in ~ at k8s-master took 1m 20s
+➜ kubectl proxy -p 0
+Starting to serve on 127.0.0.1:35789
+
+chyi in ~ at k8s-master took 36s
+➜ curl http://127.0.0.1:35789/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+{
+  "kind": "Status",
+  "apiVersion": "v1",
+  "metadata": {
+
+  },
+  "status": "Failure",
+  "message": "error trying to reach service: dial tcp 10.244.1.6:8443: i/o timeout",
+  "reason": "ServiceUnavailable",
+  "code": 503
+}%
 ```
 
 ## Kubernetes 集群运行原理
