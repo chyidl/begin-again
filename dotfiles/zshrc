@@ -1,8 +1,8 @@
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/curl/bin:/usr/local/Cellar/libpq/13.1/bin:/Users/yogo/go/bin:/Users/yogo/.poetry/bin:/usr/local/opt/postgres/bin:/usr/local/go1.16/bin:/Users/yogo/.cargo/bin:$PATH
+export PATH=$HOME/bin:/usr/local/bin:/usr/local/opt/curl/bin:/usr/local/Cellar/libpq/13.1/bin:/Users/abc/go/bin:/Users/abc/.poetry/bin:/usr/local/opt/postgres/bin:/usr/local/go1.16/bin:/Users/abc/.cargo/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/yogo/.oh-my-zsh"
+export ZSH="/Users/abc/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -104,18 +104,18 @@ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 #
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-alias link-dev-db="ssh -CfNg -L 1433:pgm-uf6bb4803r70379j127810.pg.rds.aliyuncs.com:1921 qiyaqing@aliportal.yogorobot.cloud -p 2018"
-alias link-prod-db="ssh -CfNg -L 1433:yogo-spf-db.pg.rds.aliyuncs.com:1433 qiyaqing@aliportal.yogorobot.cloud -p 2018"
-alias link-aws-db="ssh -CfNg -L 5433:a6e404d6e8d8e4677931969ccfff7d87-8da348f8880cb167.elb.cn-northwest-1.amazonaws.com.cn:5432 qiyaqing@aliportal.yogorobot.cloud -p 2018"
-alias link-bi-db='ssh -CfNg -L 1921:pgm-uf6do5r5jm2q7272129250.pg.rds.aliyuncs.com:1921 qiyaqing@aliportal.yogorobot.cloud -p 2018'
-alias link-dev-redis='ssh -CfNg -L 6380:dev-redis.yogo.cloud:6379 qiyaqing@aliportal.yogorobot.cloud -p 2018'
-alias link-prod-redis='ssh -CfNg -L 6379:yogocache.redis.rds.aliyuncs.com:6379 qiyaqing@aliportal.yogorobot.cloud -p 2018'
+alias link-dev-db="ssh -CfNg -L 1433:pgm-uf6bb4803r70379j127810.pg.rds.aliyuncs.com:1921 xxx@aliportal.abcrobot.cloud -p 2018"
+alias link-prod-db="ssh -CfNg -L 1433:abc-spf-db.pg.rds.aliyuncs.com:1433 xxx@aliportal.abcrobot.cloud -p 2018"
+alias link-aws-db="ssh -CfNg -L 5433:a6e404d6e8d8e4677931969ccfff7d87-8da348f8880cb167.elb.cn-northwest-1.amazonaws.com.cn:5432 xxx@aliportal.abcrobot.cloud -p 2018"
+alias link-bi-db='ssh -CfNg -L 1921:pgm-uf6do5r5jm2q7272129250.pg.rds.aliyuncs.com:1921 xxx@aliportal.abcrobot.cloud -p 2018'
+alias link-dev-redis='ssh -CfNg -L 6380:dev-redis.abc.cloud:6379 xxx@aliportal.abcrobot.cloud -p 2018'
+alias link-prod-redis='ssh -CfNg -L 6379:abccache.redis.rds.aliyuncs.com:6379 xxx@aliportal.abcrobot.cloud -p 2018'
 alias link-dev-kafka='kubectl port-forward dev-kafka-0 9092:9092'
 alias link-appc-vnc='ssh -CfNg -L 59000:localhost:5901 chyi@172.30.1.14'
 
 # Go
 export GO111MODULE=on
-export GOPATH=/Users/yogo/go
+export GOPATH=/Users/abc/go
 export GOROOT=/usr/local/go1.16
 
 export DOCKER_BUILDKIT=0
@@ -127,4 +127,4 @@ export COMPOSE_DOCKER_CLI_BUILD=0
 eval "$(pyenv init -)"
 
 # Dapr runtime
-export PATH=$PATH:/Users/yogo.dapr/bin
+export PATH=$PATH:/Users/abc.dapr/bin
