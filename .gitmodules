@@ -1,3 +1,0 @@
-[submodule "examples/fastapi/sars-fastapi"]
-	path = examples/fastapi/sars-fastapi
-	url = https://github.com/chyidl/sars-fastapi.git

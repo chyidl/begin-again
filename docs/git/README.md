@@ -33,9 +33,22 @@ $ git submodule update --remote --merge
 # Fetch new submodule commits
 $ cd repository/submodule
 $ git fetch (you will get the new submodule commits)
-> see the new commit 
+> see the new commit
 $ git log --oneline origin/master -3
 
-```
-# Add a Git Submodule
+begin-again on  main
+➜ git checkout -q 6dc316f
+
+# Remove Git submodules
+> In order to remove a Git submodule from your repository, use the "git submodule deinit" command followed by the "git rm" command and specify the name of the submodule folder
+
+
+$ git submodule deinit <submodule>  # delete the local submodule configuration stored in your repository (.git/config will be delete)
+$ git rm <submodule> # delete submodules files from the working directory and remaining .git folders.
+
+# Configuring submodules for your repository
+> hava a submodule summary when executing "git status"
+$ git config --global status.sumoduleSummary trueA
+> git diff command to have detailed information about your submodule, use the "git config" command with the diff.submodule parameter set to true.
+$ git config --global diff.submodule log
 ```
