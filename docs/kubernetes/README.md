@@ -1039,18 +1039,14 @@ This node has joined the cluster:
 
 Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
 
-
-
+# Kubernetes Dashboard is a general purpose, web-based UI for Kubernetes clusters. It allows users to manage application
 # To deploy Dashboard, execute following command:
+> Access control
 $ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml
 
 
-chyi in ~ at k8s-master took 1m 20s
-➜ kubectl proxy -p 0
-Starting to serve on 127.0.0.1:35789
-
 chyi in ~ at k8s-master took 36s
-➜ curl http://127.0.0.1:35789/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+https://>server-IP<:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
 {
   "kind": "Status",
   "apiVersion": "v1",
@@ -1058,10 +1054,24 @@ chyi in ~ at k8s-master took 36s
 
   },
   "status": "Failure",
-  "message": "error trying to reach service: dial tcp 10.244.1.6:8443: i/o timeout",
-  "reason": "ServiceUnavailable",
-  "code": 503
-}%
+  "message": "services \"https:kubernetes-dashboard:\" is forbidden: User \"system:anonymous\" cannot get resource \"services/proxy\" in API group \"\" in the namespace \"kube-system\"",
+  "reason": "Forbidden",
+  "details": {
+    "name": "https:kubernetes-dashboard:",
+    "kind": "services"
+  },
+  "code": 403
+}
+
+# created a service account
+chyi in ~ at k8s-master
+➜ kubectl create serviceaccount dashboard-admin-sa
+serviceaccount/dashboard-admin-sa created
+
+# bind the dashboard-admin-service-account service account to the cluster-admin role
+chyi in ~ at k8s-master took 2s
+➜ kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa
+clusterrolebinding.rbac.authorization.k8s.io/dashboard-admin-sa created
 ```
 
 ## Kubernetes 集群运行原理
