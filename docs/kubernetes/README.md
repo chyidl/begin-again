@@ -325,6 +325,8 @@ Digest: sha256:aba2bfe9f0cff1ac0618ec4a54bfefb2e685bbac67c8ebaf3b6405929b3e616f
 Status: Downloaded newer image for registry:latest
 367eb3880fa19300439343b9049f4bcecc5b278e1b093fda947690f82a018b57
 
+$ sudo docker update --restart=no <container_id>
+
 # 在私有仓库上传、搜索、下载镜像
 # docker tag IMAGE[:TAG] [REGISTRY_HOST[:REGISTRY_PORT]/]REPOSITORY[:TAG]
 ❯ docker tag mysql:latest 127.0.0.1:5000/mysql:lastest
@@ -1074,6 +1076,289 @@ chyi in ~ at k8s-master took 2s
 clusterrolebinding.rbac.authorization.k8s.io/dashboard-admin-sa created
 ```
 
+## 深入理解POD
+```
+# YAML 基本语法
+1. 大小写敏感
+2. 使用锁紧表示层级关系
+3. 锁进时不允许使用Tab键，只允许使用空格
+4. 锁进的空格树目不重要，只要相同层级的元素左侧对齐即可
+5. # 表示注释
+---: 分隔符, 在单一文件中，可用连续三个连字号 --- 区分多个文件
+
+Deployment: kuberntes 管理一组POD副本
+
+# Static Pod: 静态Pod
+> 静态Pod直接由特定节点上的kubelet进程管理，不通过master节点apiserver
+
+创建静态Pod的两种方式:
+  1. 配置文件
+  2. HTTP
+
+# Pod Hook
+  PostStart: 容器创建后立即执行
+  PreStop: 容器终止之前执行
+
+# 健康检查
+liveness probe: 存活探针 - 确定应用程序是否在运行
+readiness probe: 可读性探针 - 确定容器是否已经就绪可以接收流量
+  exec: 执行一段命令
+  http: 检测某个http请求
+    通常来讲：任何大于200小于400的返回码都会认定是成功的返回码
+  tcpSocket: kubelet 将在执行端口打开容器的套接字
+
+# 初始化容器
+Init Container: 用来做初始化工作的容器
+> 一个Pod里面所有的容器是共享数据卷和网络命名空间
+PostStart,PreStop,Liveness,readiness属于主容器的生命周期范围
+Init Container:独立于主容器之外
+```
+
+## 常用对象操作
+```
+Replication Controller: 部署、升级Pod
+  RC 保证任意时间运行Pod的副本数量,保证Pod总是可用
+  弹性伸缩：在业务高峰或者低峰的时候，可以使用RC来动态调整Pod数量来提供资源的利用率
+
+Replica Set: 下一代Replication Controller
+  RS: Kubernetes推荐使用RS和Deployment代替RC
+    RS vs. RC: RC支持基于等式的selector (env=dev) RS 支持基于集合selector ()
+
+
+RC/RS:
+  1. 大部分情况下，可以通过定义RC实现的Pod的创建和副本数量的控制
+  2. RC中包含一个完整的Pod定义模块
+  3. RC通过label selector机制来实现对Pod副本的控制
+  4. 通过改变RC里面的Pod副本数量，可以实现Pod的扩缩容功能
+  5. 通过改变RC里面的Pod模版镜像版本，可以实现Pod滚动升级功能
+
+
+Deployment: 更加方便管理Pod 和 Replica Set
+  1. RC 全部功能，Deployment具备RC全部功能
+  2. 事件和状态查看，可以查看Deployment升级详情进度和状态
+  3. 回滚：当升级Pod的时候出现问题，可以使用回滚操作回滚到之前任一版本
+  4. 版本记录：每一次对Deployment的操作，都能够保存下来，保证可以回滚到任一版本
+  5. 暂停和启动：对每一次升级都能够随时暂停和启动
+
+HAP: Horizontal Pod Autoscaling Pod水平自动伸缩
+> HAP 通过监控分析RC或者Deployment控制所有Pod的负载变化情况来确定是否需要调整Pod的副本数量
+  Heapster: 支持CPU使用率
+  自定义监控:
+
+Job: 负责处理任务 仅执行一次的任务 保证批处理任务的一个或多个Pod成功结束
+Cronjob: 在Job加上时间调度
+
+Service: 定义一组Pod的逻辑集合和一个用于访问他们的策略
+  Node IP: Node 节点的IP地址
+  Pod IP: Pod 的IP地址
+  Cluster IP: Service IP地址
+
+  Service 能够支持TCP和UDP协议
+Service 类型:
+  ClusterIP: 通过集群内部IP曝露服务
+  NodePort: 通过每个Node节点上的IP和静态端口NodePort 服务
+  LoadBalancer:
+  ExternalName:
+
+Zookeeper, Consul 服务发现
+
+ConfigMap: 提供向容器中注入配置信息的能力
+ConfigMap vs. Secrets:
+  ConfigMap 处理非敏感的数据
+  Secrets: 处理密码敏感数据
+ConfigMap配置数据Pod使用方式:
+  1. 设置环境变量的值
+  2. 在容器里设置命令行参数
+  3. 在数据卷里面创建config文件
+    ConfigMap以数据卷的形式挂载Pod的时候，更新ConfigMap，Pod内挂载的配置信息会热更新
+
+Secret:
+  ConfigMap是明文存
+  Secret: 保存敏感信息，例如密码、OAuth令牌、ssh key
+Secret 三种类型:
+  1. Opaque: base64编码格式的Secret
+    Opaque类型的数据是map类型，要求value是base64编码格式
+  2. kubernetes.io/dockerconfigjson: 存储私有docker registry认证信息
+  3. kubernetes.io/service-account-token: 用来被serviceaccount引用. Pod使用serviceaccount对应的secret会自动挂载Pod目录/run/secrets/kubernetes.io/serviceaccount
+
+  创建好Secret对象有两种方式使用:
+    1. 环境变量形式
+    2. Volume形式挂载
+
+Secret vs. ConfigMap
+  相同:
+    1. key/value的形式
+    2. 属于某个特定的namespace
+    3. 可以导出到环境变量
+    4. 可以通过目录/文件形式挂载
+    5. 通过volume挂载的配置信息均可热更新
+  不同点:
+     Secret 可以被ServerAccount关联
+     Secret可以存储docker registery鉴权信息，用在ImagePullSecret参数中,用于拉去私有仓库的镜像
+     Secret支持Base64加密
+     Secret分为kubernetes.io/service-account-token\kuberntes.io/dockerconfigjson\Opaque 三种类型
+
+RBAC: 基于角色的访问控制
+  RBAC使用rbac.authorization.k8s.io API Group 实现授权决策
+  Kuberntes基本的特性就是它的所有资源对象都是模型化的API对象,允许执行CRUD(Create, Read, Update, Delete)操作
+    资源:
+      Pods
+      ConfigMaps
+      Deployments
+      Nodes
+      Secrets
+      Namespace
+    操作:
+      create
+      get
+      delete
+      list
+      update
+      edit
+      watch
+      exec
+
+    Rule: 规则，是一组不同的API Group资源上的一组操作集合
+    Role ClusterRole: 角色和集群角色
+      Role 适用单个命名空间和namespace关联
+      ClusterRole:
+    Subject: 主题
+      User Account: 用户: 外部独立服务进行管理
+      Group: 组 关联多个账户
+      Service Account: 服务账号
+    RoleBinding 和 ClusterRoleBinding: 角色绑定和集群角色绑定
+
+创建只能访问某个namespace的用户
+> 创建一个User Account访问kube-system命名空间
+  username: imacg4
+  group: imac
+
+
+# 给imacg4创建一个私钥 imacg4.key
+chyi in devops at k8s-master on  master [+?]
+➜ openssl genrsa -out imacg4.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+..........................+++++
+............+++++
+e is 65537 (0x010001)
+
+#
+chyi in devops at k8s-master on  master [+?]
+➜ openssl req -new -key imacg4.key -out imacg4.csr -subj "/CN=imacg4/O=imac"
+
+# 生成最终的证书文件，设置证书有效期为500
+chyi in devops/user_account at k8s-master on  master [+?]
+➜ sudo openssl x509 -req -in imacg4.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out imacg4.crt -days 500
+[sudo] password for chyi:
+Signature ok
+subject=CN = imacg4, O = imac
+Getting CA Private Key
+
+# 查看当前文件是否生成证书文件
+chyi in devops/user_account at k8s-master on  master [+?] took 2s
+➜ la
+total 12K
+-rw-r--r-- 1 chyi users 1009 Aug  4 11:39 imacg4.crt
+-rw-r--r-- 1 chyi users  907 Aug  4 11:36 imacg4.csr
+-rw------- 1 chyi users 1.7K Aug  4 11:33 imacg4.key
+
+# 创建新的凭证
+chyi in devops/user_account at k8s-master on  master [+?]
+➜ kubectl config set-credentials imacg4 --client-certificate=imacg4.crt --client-key=imacg4.key
+User "imacg4" set.
+
+# 设置新Context
+chyi in devops/user_account at k8s-master on  master [+?]
+➜ kubectl config set-context imacg4-context --cluster=kubernetes --namespace=kube-system --user=imacg4
+Context "imacg4-context" created.
+
+DaemonSet vs. StatefulSet
+  DaemonSet: 每个kubernetes节点中将守护进程的副本作为后台进程运行
+    1. 集群存储守护程序: glusterd, ceph 部署在每个节点上提供持久性存储
+    2. 节点监视守护进程: Prometheus 监控集群, 可以在每个节点上运行一个node-exporter进程收集监控节点的信息
+    3. 日志收集守护程序:fluentd logstash:每个节点上运行以收集容器的日志
+
+StatefulSet:
+  有状态服务 vs. 无状态服务
+    Stateless Service 无状态服务:该服务运行的实例不会在本地存储需要持久化的数据，并且多个实例对于同一个请求响应的结果是完全一致
+    Steteful Service 有状态服务: 该服务运行的实例需要在本地存储持久化数据
+
+  稳定的，唯一的网络标识符
+  稳定的，持久化的存储
+  有序的，优雅的部署和缩放
+  有序的，优雅的删除和终止
+  有序的，自动滚动更新
+
+持久化存储:
+  PV: PersistentVolume 持久化卷 是对底层共享存储的一种抽象
+  PVC: PersistentVolumeClaim 持久化卷声明 是用户存储的一种声明
+
+NFS:
+  Capacity: 存储能力
+  AccessModes: 访问模式
+    ReadWriteOnce (RWO) 读写权限，但是只能被单个节点挂载
+    ReadOnlyMant (ROX): 只读权限，可以被多节点挂载
+    ReadWriteMany (RWX): 读写权限，可以被多个节点挂载
+  persistentVolumeReclaimPolicy 回收策略
+    Retain: 保留 - 保留数据，需要管理员手动清理数据
+    Recycle: 回收，清除PV中的数据
+    Delete: 删除，
+  Status:
+    Available:表示可用状态，还未被任何PVC绑定
+    Bound: 表示PV已经被PVC绑定
+    Released: 已释放 PVC被删除，但是资源还未被集群重新声明
+    Failed: 失败，表示PV的自动回收失败
+
+PVC:
+StorageClass: (https://opensource.com/article/20/6/kubernetes-nfs-client-provisioning)
+
+  nfs-client: 自动配置程序 Provisioner
+  Provisioner 自动创建持久卷
+    自动创建的PV以${namespace}-${pvcName}-${pvName}
+    当这个PV被回收后会以archieved-${namespace}-${pvcName}-${pvName}命名格式存在NFS服务器上
+
+chyi in devops at k8s-master on  master [+?]
+➜ helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+"nfs-subdir-external-provisioner" has been added to your repositories
+
+chyi in devops at k8s-master on  master [+?]
+➜ helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    --set nfs.server=172.30.1.14 \
+    --set nfs.path=/export/K8sData
+NAME: nfs-subdir-external-provisioner
+LAST DEPLOYED: Thu Aug  5 11:28:49 2021
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+```
+
+## 部署Wordpress
+```
+# 创建一个命名空间
+chyi in devops at k8s-master on  master [+?] took 4s
+➜ kubectl create namespace application
+namespace/application created
+
+chyi in devops at k8s-master on  master [+?]
+➜ kubectl get namespaces
+NAME                   STATUS   AGE
+application            Active   7s
+```
+
+## 服务发现 Service Discovery
+``
+DNS服务作为addon插件存在Kubernetes集群内部
+  kube-dns
+  CoreDNS: DNS and Service Discovery
+
+Ingress:
+  从Kubernetes集群外部访问集群的一个入口，将外部的请求转发到集群内不同的Service上
+
+  Traefik: 开源的反向代理于负载均衡工具
+```
+
 ## Kubernetes 集群运行原理
 
 ## Kubernetes 调度策略
@@ -1081,6 +1366,74 @@ clusterrolebinding.rbac.authorization.k8s.io/dashboard-admin-sa created
 ## Kubernetes 运维
 
 ## Helm 包管理的使用
+> The package manager for Kubernetes
+> Helm is the best way to find, share, and use software built for Kubernetes
+> Helm is the package manager for Kubernetes and provides the solution for the package management, security, configurability while deploying application to Kubernetes.
+```
+# Install Helm
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+
+Helm Charts help you define, install, and upgrade even the most complex Kubernetes application
+Charts are easy to create, version, share, and publish - so start using Helm and stop the copy-and-paste.
+
+Helm can do the following:
+  1. Create new charts from scratch
+  2. Package charts into chart archive tgz files
+  3. Interact with chart repositories where charts are stored.
+  4. Install and uninstall charts into an existing Kubernetes cluster
+  5. Manage the release cycle of charts that have been installed with Helm
+
+For Helm, there are three important concepts:
+  1. The chart is a bundle of information necessary to create an instance of a Kubernetes application.
+  2. The config contains configuration information that can be merged into a packaged chart to create a releasable object.
+  3. A release is a running instance of a chart, combined with a specfic config.
+
+Helm Client: is a command-line client for end users
+Helm Library: provides the logic for executing all Helm operations.
+
+// view all clusters:
+$ kubectl config get-clusters
+
+// get the current context
+$ kubectl config current-context
+
+
+chyi in devops at k8s-master on  master [+?]
+➜ helm install mongo-release1 bitnami/mongodb
+NAME: mongo-release1
+LAST DEPLOYED: Thu Aug  5 11:14:00 2021
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+** Please be patient while the chart is being deployed **
+
+MongoDB&reg; can be accessed on the following DNS name(s) and ports from within your cluster:
+
+    mongo-release1-mongodb.default.svc.cluster.local
+
+To get the root password run:
+
+    export MONGODB_ROOT_PASSWORD=$(kubectl get secret --namespace default mongo-release1-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)
+
+To connect to your database, create a MongoDB&reg; client container:
+
+    kubectl run --namespace default mongo-release1-mongodb-client --rm --tty -i --restart='Never' --env="MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD" --image docker.io/bitnami/mongodb:4.4.8-debian-10-r0 --command -- bash
+
+Then, run the following command:
+    mongo admin --host "mongo-release1-mongodb" --authenticationDatabase admin -u root -p $MONGODB_ROOT_PASSWORD
+
+To connect to your database from outside the cluster execute the following commands:
+
+    kubectl port-forward --namespace default svc/mongo-release1-mongodb 27017:27017 &
+    mongo --host 127.0.0.1 --authenticationDatabase admin -p $MONGODB_ROOT_PASSWORD
+
+// list the installation with the following command
+$ helm list
+```
 
 ## Kubenetes CI/CD
 
@@ -1139,4 +1492,10 @@ SaaS: 软件即服务
 
 12. 管理进程: 后台管理任务当作一次性进程运行
     一次性管理进程应该和正常的常驻进程使用同样的环境，这些管理进程和任何其他的进程一样，使用相同的代码和配置
+```
+
+Appendix:
+---------
+```
+1. https://www.qikqiak.com/
 ```
