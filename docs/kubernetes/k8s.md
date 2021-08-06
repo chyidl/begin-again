@@ -35,6 +35,7 @@ Disaster recovery - backup and restore
         ```
     - Secrets
         ```
+        Secret lives in K8s, not in the repository
         used to store secret data
         base64 encoded
         ```
@@ -47,7 +48,11 @@ Disaster recovery - backup and restore
         ```
     - Deployment
         ```
-
+        abstraction over Pods
+        ```
+    - Replicaset
+        ```
+        Replicaset is managing the replicas of a Pod
         ```
     - StatefulSet
         ```
@@ -70,7 +75,7 @@ Disaster recovery - backup and restore
         * Api Server: is like cluster gateway; acts as a gatekeeper for authentication
         * Scheduler: just decides on which Node new Pod should be scheduled
         * Controller manager: detect cluster state changes
-        * etcd: which is a key value store of a cluster
+        * etcd: which is a key value store of a cluster; holds the current status of any K8s component
 
 * Minikube and kubectl - Local Setup
     - minikube
@@ -151,3 +156,133 @@ Disaster recovery - backup and restore
 
     minikube cli: for start up/deleting the cluster
     ```
+
+* Main Kubelet Commands
+    - Basic kubectl commands
+    ```
+        $ kubectl get all
+        CRUD commands
+            Create deployment:  kubectl create deployment [name]
+                $ kubectl create deployment nginx-depl --image=nginx
+            Edit deployment:
+                $ kubectl edit deployment [name]
+            Delete deployment:
+                $ kubectl delete deployment [name]
+
+        Status of different K8s componenets
+            kubectl get nodes | pod | services| replicaset | deployment
+
+        Debugging pods
+            Log to console: kubectl logs [pod name]
+                $ kubectl logs [pod name]
+            Get Interactive Terminal:
+                $ kubectl exec -it [pod name] -- bin/bash
+            Get Info about Pod
+                $ kubectl describe pod [pod name]
+
+        Use Configuration file for CRUD
+            Apply a configuration file
+                $ kubectl apply -f [file name] --namespace=[namespace]
+            Delete with configuration file
+                $ kubectl delete -f [file name] --namespace=[namespace]
+    ```
+    [nginx-deployment.yaml](./devops/nginx-deployment.yaml)
+    [nginx-service.yaml](./devops/nginx-service.yaml)
+    [nginx-deployment-result.yaml](./devops/nginx-deployment-result.yaml)
+
+* K8s YAML Configuration File
+    - Each configuration file has 3 parts
+    ```
+    1. Metadata
+    2. Specification : are specfic to the kind
+    3. Status: Automatically generated and added by Kubernetes
+    ```
+    - Format of configuration file
+    ```
+
+    ```
+    - Connecting components (Labels & Selectors & Ports)
+    ```
+
+    ```
+
+* Complete Application Setup with Kubernetes Components
+> mongo-express & mongoDB
+    - Overview of K8s Components
+    ```
+    1. 2 Deployment/Pod
+    2. 2 Service
+    3. 1 ConfigMap
+    4. 1 Secret
+
+    begin-again/docs/kubernetes on  main [✘!?]
+    ➜ minikube service mongo-express-service
+    |-----------|-----------------------|-------------|---------------------------|
+    | NAMESPACE |         NAME          | TARGET PORT |            URL            |
+    |-----------|-----------------------|-------------|---------------------------|
+    | default   | mongo-express-service |        8081 | http://192.168.64.2:30000 |
+    |-----------|-----------------------|-------------|---------------------------|
+    🎉  Opening service default/mongo-express-service in default browser...
+    ```
+
+* K8s Namespaces explained
+    - What is a Namespace?
+    ```
+    Organise resources in namespaces
+
+    begin-again/docs/kubernetes on  main [✘!?]
+    ➜ kubectl get namespace
+    NAME              STATUS   AGE
+    default           Active   10h
+    kube-node-lease   Active   10h
+    kube-public       Active   10h
+    kube-system       Active   10h
+
+    begin-again/docs/kubernetes on  main [✘!?]
+    ➜ kubectl cluster-info
+    Kubernetes control plane is running at https://192.168.64.2:8443
+    CoreDNS is running at https://192.168.64.2:8443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+    To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+    ```
+    - What are the use cases?
+    ```
+    Everything in one Namespace
+    Resources grouped in Namespace
+    Resource Sharing:
+        Staging and Development
+        Blue/Green Deployment
+    Access and Resource Limits on Namespaces
+    Limit: CPU, RAM, Storage per NS
+
+    1. Structure your components
+    2. Avoid conflicts between teams
+    3. Share services between different environments
+    4. Access and Resource Limits on Namespaces Level
+    ```
+    - How Namespaces work and how to use it?
+    ```
+    Characteristics of Namespaces?
+        1. You can't access most resources from another Namespace
+            Each NS must define own ConfigMap, Secret
+            Access Service in another Namespace [service-name].[namespace]
+
+        2. Components, which can't be created within a Namespace
+            $ kubectl api-resources --namespaced=false
+            $ kubectl api-resources --namespaced=true
+
+        By default, components are created in a default NS
+
+    Change active namespace?
+        Change the active namespace with kubens?
+        $ brew install kubectx
+
+        begin-again/docs/kubernetes on  main [✘!?] took 27s
+        ➜ kubens
+        default
+        kube-node-lease
+        kube-public
+        kube-system
+        my-namespace
+    ```
+
