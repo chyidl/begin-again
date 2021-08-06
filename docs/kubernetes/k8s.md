@@ -78,7 +78,7 @@ Disaster recovery - backup and restore
         * etcd: which is a key value store of a cluster; holds the current status of any K8s component
 
 * Minikube and kubectl - Local Setup
-    - minikube
+    - [minikube](https://github.com/AliyunContainerService/minikube/wiki)
     ```
     Master and Node processes run on one machine
     1. creates Virtual Box on your laptop
@@ -286,3 +286,121 @@ Disaster recovery - backup and restore
         my-namespace
     ```
 
+* K8s Ingress explained
+    - What is Ingress?
+    ```
+    External Service vs. Ingress
+
+    Host:
+        - valid domain address
+        - map domain name to Node's IP address, which is the entrypoint
+    ```
+    - How to configure Ingress in your Cluster?
+    ```
+    You need an implementation for Ingress!
+    Which is Ingress Controller
+    ```
+    - Ingress YAML Configuration
+    - When do you need Ingress?
+    - Ingress Controller
+    ```
+    evaluates all the rules
+    manages redirections
+    entrypoint to cluster
+    ```
+    - Configure Ingress in Minikube
+    ```
+    Install Ingress Controller in Minikube
+    # Automatically starts the K8s Nginx implementation of Ingress Controller
+    $ minikube addons enable ingress
+
+    ➜ kubectl get all -n kubernetes-dashboard
+    NAME                                             READY   STATUS    RESTARTS   AGE
+    pod/dashboard-metrics-scraper-7886f6d855-dx728   1/1     Running   0          61s
+    pod/kubernetes-dashboard-66f6c8f7c5-6t42t        1/1     Running   0          61s
+
+    NAME                                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+    service/dashboard-metrics-scraper   ClusterIP   10.97.169.116    <none>        8000/TCP   62s
+    service/kubernetes-dashboard        ClusterIP   10.101.159.196   <none>        80/TCP     62s
+
+    NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
+    deployment.apps/dashboard-metrics-scraper   1/1     1            1           63s
+    deployment.apps/kubernetes-dashboard        1/1     1            1           63s
+
+    NAME                                                   DESIRED   CURRENT   READY   AGE
+    replicaset.apps/dashboard-metrics-scraper-7886f6d855   1         1         1       62s
+    replicaset.apps/kubernetes-dashboard-66f6c8f7c5        1         1         1       62s
+    ```
+    - Configuring TLS Certificate
+    ```
+    1. Data keys need to be "tls.crt" and "tls.key"
+    2. Values are file contents NOT file paths/locations
+    3. Secret component must be in the same namespace as the Ingress component
+    ```
+
+* Helm - Package Manager of K8s
+    - What is Helm?
+    ```
+    Package Manager for Kubernetes.
+    To package YAML Files and distribute them in public and private repositories.
+    ```
+    - What are Helm Charts?
+    ```
+    Bundle of YAML Files
+    Create your own Helm Charts with Helm
+    Push them to Helm Repository
+    Download and use existing ones
+
+    Templating Engine
+        1. Define a common blueprint
+        2. Dynamic values are replaced by placeholders
+
+    Helm Chart Structure
+        Directory structre:
+            mychart/            -- name of chart
+                Chart.yaml      -- meta info about chart
+                values.yaml     -- values for the template files
+                charts/         -- chart dependencies
+                templates/      -- the actual template files
+        $ helm install <chartname>  # template files will be filled with the values from values.yaml
+        $ helm install --values=my-values.yaml <chartname>
+        $ helm install --set version=2.0.0
+
+    Release Management
+        Helm Version 2 comes in two parts:
+            CLIENT (helm CLI)
+            SERVER (Tiller) -- Helm 3 Tiller got removed
+
+        $ helm install <chartname>
+        $ helm upgrade <chartname>
+            - Changes are applied to existing deployment instead of creating a new one
+        $ helm rollback <chartname>
+            - Handling rollbacks
+    ```
+    - How to use them?
+    ```
+    Helm Hub: Discover & launch great Kubernetes-ready apps
+    $ helm search <keyword>
+    ```
+    - When to use them?
+    ```
+    Same Applications across different environments
+        Development
+        Staging
+        Production
+    ```
+
+* K8s Volumes explained
+    - How to persist data in Kubernetes using volumes?
+    ```
+    Storage that doesn't depend on the pod lifecycle.
+    Storage must be available on all nodes.
+    Storage needs to survive even if cluster crashes.
+
+    1. Persistent Volume
+        - a cluster resource
+        - created via YAML file
+        - needs actual physical storage, like [local disk, nfs server, cloud-storage]
+    2. Persistent Volume Claim
+    3. Storage Class
+    ```
