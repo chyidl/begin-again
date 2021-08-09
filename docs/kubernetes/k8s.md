@@ -32,12 +32,18 @@ Disaster recovery - backup and restore
     - ConfigMap
         ```
         external configuration of your application
+        - local volumes
+        - not created via PV and PVC
+        - managed by Kubernetes
         ```
     - Secrets
         ```
         Secret lives in K8s, not in the repository
         used to store secret data
         base64 encoded
+        - local volumes
+        - not created via PV and PVC
+        - managed by Kubernetes
         ```
     - Volumes
         ```
@@ -397,10 +403,129 @@ Disaster recovery - backup and restore
     Storage must be available on all nodes.
     Storage needs to survive even if cluster crashes.
 
-    1. Persistent Volume
-        - a cluster resource
+    1. Persistent Volume - PV
+        - a cluster resource --
         - created via YAML file
         - needs actual physical storage, like [local disk, nfs server, cloud-storage]
-    2. Persistent Volume Claim
+        - Persistent Volumes are NOT namespaced
+        - Local vs. Remote Volume Types
+        Each volume type has it's own use case!
+
+    2. Persistent Volume Claim - PVC
+        - Claims must be in the same namespace!
+
+        1. Pod requests the volume through the PV claim
+        2. Claim tries to find a volume in cluster
+        3. Volume has the actual storage backend
+
     3. Storage Class
+        - SC provisions Persistent Volumes dynamically.
+        Storage Class create persistent volumes dynamically in the background
+        1. Pod claims storage via PVC
+        2. PVC requests storage from SVC
+        3. SC creates PV that meets the needs of the Claim
     ```
+
+* K8s StatefulSet
+    - What is StatefulSet?
+        stateful application: [deployed using StatefulSet]
+            - databases
+            - applications that stores data
+
+        stateless applications: [deployed using Deployment]
+            - don't keep record of state
+            - each request is cimpletely new
+
+        Stateful applications not perfect for containerized environments
+
+    - Why StatefulSet is used?
+    - How StatefulSet works and how it's different from Deployment?
+
+* K8s Services
+    - What is a Kubernetes Service and when we need it?
+    ```
+    Each Pod has its own IP address
+        - Pods are ephemeral - are destroyed frequently!
+    Service:
+        - stable IP address
+        - loadbalancing
+        - loose coupling
+        - within & outside cluster
+
+    Service Endpoints:
+        K8s creates Endpoint object
+        same name as Service
+        keeps track of, which Pods are the members/endpoints of the Service
+    ```
+    - Different Service types explained
+    ```
+        - ClusterIP Services
+            - default type
+        - Headless Services
+            - Set ClusterIP to None - Returns Pod IP address instead
+        - NodePort Services
+            - NodePort Range: 30000 - 32767
+            - NodePort Service is an extension of ClutserIP Service
+        - LoadBalancer Service
+            - LoadBalancer Service is an extension of NodePort Service
+    ```
+
+Appendix
+-------
+* Kubernetes drops Docker support?
+    - Why is Docker deprecated?
+    ```
+    1. Kubernetes supports different container runtime
+        Docker:
+            just one of those container runtimes
+
+    Docker Engine:
+        CLI:
+        API:
+        Server:
+            - container runtime: start/stop
+            - Volumes: persisting data
+            - Network
+            - build images
+    Dockershim: implements CRI support for Docker
+    Containerd:
+        - 2nd most popular container runtime
+        - is already used in Managed K8s services
+
+    CICD Pipeline:
+        test code -> build Docker Image -> push to Docker Repo -> deploy to K8s cluster
+    ```
+    - OCI
+    ```
+    standards around container technology
+    Docker, containered, CRI-O comply to these OCI standards
+    ```
+
+* Istio
+> Istio is a Service Mesh
+```
+Service Mesh is a Pattern or Paradigm, Istio is an implementation
+
+Service Mesh: is a popular solution for managing communication between individual microservices
+    Sidecar Proxy:
+        handless these networking logic
+        acts as a Proxy
+        third-party application
+        cluster operators can configure it easyly
+        Cluster operators can configure it easily
+        Control Plane
+    Traffic Split: - Canary金丝雀 Deployment
+
+Challenges of a microservice architecture:
+    1. Business Logic BL
+    2. Communication configurations (COMM)
+    3. Security Logic (SEC)
+    4. retry logic (R)
+    5. metrics & traning systems
+
+Istio Architecture
+    proxy: envoy
+    control Plane: istiod : configuration, discovery, certificates
+    Data Plane:
+How to configure Istio?
+```
