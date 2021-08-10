@@ -1,73 +1,24 @@
 Prometheus
 ==========
 
-* What is Prometheus?
+* 特征
 ```
-Monitoring Tool:
-    Highly dynamic container environments
-    Traditional, bare server
-
-```
-
-* Where and Why is Prometheus used?
-```
-- constantly monitor all the services
-- alert when crash
-- checking memory usage:
-    over for 70% one hour
-- notify administrator
-- monitoring network
+1. 具有metric名称和键值对标识的时间序列数据的多维数据模型
+2. 灵活的查询语句
+3. 不依赖分布式存储，只和本地磁盘有关
+4. 通过HTTP的服务拉取时间序列数据
+5. 支持推送的方式来添加时间序列数据
+6. 支持通过服务发现或静态配置发现目标
+7. 多种图形和仪表板支持
 ```
 
-* Prometheus Architecture
+* 组件
 ```
-1. Prometheus Server:
-    > processes and stores metrics data
-
-    - Storage: Time Series Database
-    - Retrieval: Data Retrieval Workers
-    - HTTP Server: Accpets PromQL queries
-
-2. AlertManager:
-    > send alerts
-    - How does Prometheus trigger the alerts?
-    - Who receives the alerts?
-
-    Email, Slack
-
-3. Prometheus Web UI
-
-Counter:
-    How many times X happend
-Gauge:
-    What is the current value of x now
-Histogram:
-    how long or how big
-
-Collecting Metrics Data from Targetes
-    pulls over HTTP endpoints, hostaddress/metrics
-
-Exporter:
-    fetches metrics, Target some service
-
-Monitoring your own applications?
-    - How many requests?
-    - How many exceptions?
-    - How many server resources are used?
-
-Pull system - more advantages:
-    - multiple prometheus instances can pull metrics data
-
-Pushgateway:
-
-
-Prometheus Data Storage:
-    Time Serial Database
-
-PromQL Query Language:
-    Grafana: powerful visualization tools
-
-Prometheus Characteristics:
+Prometheus Server: 用于抓取指标，存储时间序列数据
+exporter: 暴露指标 
+pushgateway: push的方式将指标数据推送到该网关
+alertmanager: 处理报警
+adhoc: 数据查询
 ```
 
 - [  ][prometheus-community/helm-charts](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus)
