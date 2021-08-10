@@ -70,34 +70,14 @@ PromQL Query Language:
 Prometheus Characteristics:
 ```
 
-* Deploy Prometheus in Kubernetes cluster
-    1. Creating all configuration YAML files yourself and execute them in right order
-    2. Using an operator [kubernetes Operator]
-        Manager of all Prometheus components
-    3. Using Helm chart to deploy operator
-        Helm: initiale setup
-        Operator: manage setup
+- [  ][prometheus-community/helm-charts](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus)
+> This chart bootstraps a Prometheus deployment on a Kubernetes cluster using the Helm package manager.
+```
+# Get Repo Info
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+$ helm repo add kube-state-metrics https://kubernetes.github.io/kube-state-metrics
+$ helm repo update
 
-    ```
-    # add the repo
-    $ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-
-    # search charts
-    $ helm search repo prometheus-community
-
-    # stable/prometheus-operator -> rename -> kube-prometheus-stack
-    begin-again/docs/kubernetes/devops on  main [!?]
-    ➜ helm install prometheus prometheus-community/kube-prometheus-stack
-    NAME: prometheus
-    LAST DEPLOYED: Mon Aug  9 11:56:17 2021
-    NAMESPACE: default
-    STATUS: deployed
-    REVISION: 1
-    NOTES:
-    kube-prometheus-stack has been installed. Check its status by running:
-      kubectl --namespace default get pods -l "release=prometheus"
-
-    Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
-
-
-    ```
+# Install Chart
+$ helm install [RELEASE_NAME] prometheus-community/prometheus
+```

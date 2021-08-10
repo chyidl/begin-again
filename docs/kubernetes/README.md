@@ -1321,17 +1321,17 @@ chyi in devops at k8s-master on  master [+?]
 ➜ helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 "nfs-subdir-external-provisioner" has been added to your repositories
 
-chyi in devops at k8s-master on  master [+?]
+chyi in ~ at k8s-master took 13s
 ➜ helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
     --set nfs.server=172.30.1.14 \
-    --set nfs.path=/export/K8sData
+    --set nfs.path=/export/K8sData \
+    --set image.repository=yonatankahana/nfs-subdir-external-provisioner --set image.tag=armfix2
 NAME: nfs-subdir-external-provisioner
-LAST DEPLOYED: Thu Aug  5 11:28:49 2021
+LAST DEPLOYED: Tue Aug 10 15:44:17 2021
 NAMESPACE: default
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
-
 ```
 
 ## 部署Wordpress
