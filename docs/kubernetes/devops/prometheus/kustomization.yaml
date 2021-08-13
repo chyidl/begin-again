@@ -1,0 +1,6 @@
+resources:
+- prometheus-cm.yaml
+- prometheus-deploy.yaml
+- prometheus-rbac.yaml
+- prometheus-svc.yaml
+- prometheus-volume.yaml

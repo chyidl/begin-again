@@ -1437,6 +1437,52 @@ $ helm list
 
 ## Kubenetes CI/CD
 
+## Kubernetes 调度器 kube-scheduler
+```
+调度主要分为一下几个部分:
+  1. 预选过程, 过滤掉不满足条件的节点 Predicates
+    PodFitsResources: 节点剩余资源是否大于Pod请求资源
+    PodFitsHost: 如果Pod指定NodeName,检查节点名称是否和NodeName匹配
+    PodFitsHostPorts: 节点上已经使用的port是否和Pod申请的port冲突
+    PodSelectorMatches: 过滤掉和Pod指定的label不匹配的节点
+    NoDiskConflict: 已经mount的volume和Pod指定的volume不冲突，除非他们都是只读的
+    CheckNodeDiskPressure: 检查节点磁盘空间是否符合要求
+    CheckNodeMemoryPressure: 检查节点内存是否够用
+
+  2. 优选过程, 对通过的节点按照优先级排序，Priorities
+    LeastRequestedPriority: 通过计算CPU和内存的使用率决定权重
+    SelectorSpreadPriority: 为了更好的高可用，同属于一个Deployment或者RC下面的多个Pod副本尽量调度到多个不同的节点上
+    ImageLocalityPriority: 如果某个节点上已经有要使用的镜像节点，镜像总大小值越大，权重就越高
+    NodeAffinityPriority: 根据节点的亲和性计算权重值
+  3. 最后从中选择优先级最高的节点，如果中间步骤错误，直接返回错误
+
+优先级调度:
+
+Kubernetes 亲和性调度:
+  nodeAffinity: 节点亲和性
+    > 主要用来控制Pod要部署在哪些主机上，以及不能部署在哪些主机上
+
+  podAffinity: Pod亲和性
+    > 解决pod可以和哪些pod部署在同一拓扑域(拓扑域用主机标签实现，可以是单个主机也可以是多个主机组成的cluster, zone)中的问题
+
+  podAntiAffinity: Pod反亲和性
+    > 解决pod不能和哪些pod部署在用一个拓扑域中的问题。
+
+  亲和性调度分为软策略和硬策略：
+    1. 软策略: 没有满足调度要求的节点的话，Pod会忽略这条规则,继续完成调度过程
+    2. 硬策略:
+
+  preferredDuringSchedulingIgnoredDuringExecution: 软策略
+  requiredDuringSchedulingIgnoredDuringExecution: 硬策略
+
+  污点 taints:
+    > 节点标记为taints,除非pod也被标识为可以容忍污点节点，否则改Taints节点不会被调度pod
+      NoScheduler:
+      PreferNoSchedule: NoSchedule的软策略版本 表示尽量不调度到污点节点
+      NoExecute: 如果该节点内正在运行的pod没有对应的Tolerate
+  容忍 tolerations:
+    >
+```
 
 ### FAQ:
 

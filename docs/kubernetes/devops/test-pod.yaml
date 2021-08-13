@@ -20,3 +20,5 @@ spec:
   - name: nfs-pvc
     persistentVolumeClaim:
       claimName: test-claim
+  nodeSelector:
+    com: chyidl

@@ -21,14 +21,26 @@ alertmanager: 处理报警
 adhoc: 数据查询
 ```
 
-- [  ][prometheus-community/helm-charts](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus)
-> This chart bootstraps a Prometheus deployment on a Kubernetes cluster using the Helm package manager.
+* 架构
+[prometheus arch](../../misc/kubenetes/prometheus-architecture.png)
 ```
-# Get Repo Info
-$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-$ helm repo add kube-state-metrics https://kubernetes.github.io/kube-state-metrics
-$ helm repo update
+Prometheus 直接接收或者通过中间Pushgateway网关被动获取指标数据
 
-# Install Chart
-$ helm install [RELEASE_NAME] prometheus-community/prometheus
+```
+
+* Kubernetes安装Prometheus
+```
+.
+├── prometheus-cm.yaml        # 使用ConfigMap 管理prometheus.yaml
+├── prometheus-deploy.yaml    # 创建Prometheus Pod资源
+├── prometheus-rbac.yaml      # ServiceAccount对象
+├── prometheus-svc.yaml
+└── prometheus-volume.yaml    # 时序数据持久化 TSDB
+
+0 directories, 5 files
+```
+
+* 监控Kubernetes集群应用
+```
+
 ```
