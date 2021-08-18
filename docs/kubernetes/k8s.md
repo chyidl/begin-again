@@ -148,6 +148,17 @@ Disaster recovery - backup and restore
         ➜ kubectl version
         Client Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.2", GitCommit:"092fbfbf53427de67cac1e9fa54aaa09a28371d7", GitTreeState:"clean", BuildDate:"2021-06-16T12:59:11Z", GoVersion:"go1.16.5", Compiler:"gc", Platform:"darwin/amd64"}
         Server Version: version.Info{Major:"1", Minor:"21", GitVersion:"v1.21.2", GitCommit:"092fbfbf53427de67cac1e9fa54aaa09a28371d7", GitTreeState:"clean", BuildDate:"2021-06-16T12:53:14Z", GoVersion:"go1.16.5", Compiler:"gc", Platform:"linux/amd64"}
+
+        chyi in ~ at k8s-master took 24s
+        ➜ kubectl version --short
+        Client Version: v1.21.3
+        Server Version: v1.21.3
+
+        chyi in ~ at k8s-master took 3s
+        ➜ kubectl get nodes
+        NAME         STATUS   ROLES                  AGE   VERSION
+        k8s-master   Ready    control-plane,master   23d   v1.21.3
+        k8s-node1    Ready    worker                 22d   v1.21.3
     ```
     - kubectl
     > command line tool for kubernetes cluster
@@ -469,6 +480,31 @@ Disaster recovery - backup and restore
         - LoadBalancer Service
             - LoadBalancer Service is an extension of NodePort Service
     ```
+
+* Set Up Kubernetes Dashboard Web UI
+```
+chyi in ~ at k8s-master took 24s
+➜ kubectl version --short
+Client Version: v1.21.3
+Server Version: v1.21.3
+
+chyi in ~ at k8s-master took 3s
+➜ kubectl get nodes
+NAME         STATUS   ROLES                  AGE   VERSION
+k8s-master   Ready    control-plane,master   23d   v1.21.3
+k8s-node1    Ready    worker                 22d   v1.21.3
+
+chyi in ~ at k8s-master took 3s
+➜ kubectl get ns
+NAME                   STATUS        AGE
+application            Active        12d
+default                Active        23d
+infrastructure         Active        23h
+kube-node-lease        Active        23d
+kube-public            Active        23d
+kube-system            Active        23d
+monitoring             Active        5d
+```
 
 Appendix
 -------
